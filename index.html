@@ -1,0 +1,2419 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="ต้นแบบระบบสารสนเทศงานวิจัยและนวัตกรรมอาชีวศึกษา — เว็บจำลองเพื่อการศึกษา">
+<style>html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>ต้นแบบระบบสารสนเทศงานวิจัยและนวัตกรรมอาชีวศึกษา</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#EEF1F4; --surface:#FFFFFF; --surface-2:#F5F7F9; --surface-3:#E7EDF2;
+  --ink:#14202B; --ink-2:#47586A; --ink-3:#7A8A99;
+  --line:#D6DEE5; --line-2:#B7C4CF;
+  --brand:#0A1D45; --brand-2:#254C9D; --brand-soft:#E6ECF9; --on-brand:#FFFFFF;
+  --gold:#953115; --gold-soft:#F9EAE6;
+  --ok:#14724A; --ok-soft:#E6F9F1;
+  --warn:#9A5B08; --warn-soft:#F9F1E6;
+  --bad:#A4133C; --bad-soft:#F9E6EC;
+  --info:#175F8C; --info-soft:#E6F2F9;
+  --mute:#5C6B78; --mute-soft:#E7EBEF;
+  --shadow:0 1px 2px rgba(20,32,43,.07), 0 8px 24px rgba(20,32,43,.07);
+  /* สีชุดหมวดหมู่สำหรับแผนภูมิ ผ่านการตรวจค่าความต่างสำหรับผู้มีภาวะตาบอดสีแล้ว */
+  --c1:#2a78d6; --c2:#eb6834; --c3:#1baf7a; --c4:#eda100;
+  --grid:#E4E9ED; --axis:#8A98A4;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#0E1620; --surface:#16202B; --surface-2:#1C2733; --surface-3:#22303D;
+  --ink:#E6EDF3; --ink-2:#A8B8C6; --ink-3:#7C8D9C;
+  --line:#2C3A48; --line-2:#44566A;
+  --brand:#85A2E0; --brand-2:#ACC1EC; --brand-soft:#171D2C; --on-brand:#060B16;
+  --gold:#E09985; --gold-soft:#2C1B17;
+  --ok:#85E0B9; --ok-soft:#172C23;
+  --warn:#E0B985; --warn-soft:#2C2317;
+  --bad:#E0859F; --bad-soft:#2C171D;
+  --info:#85BDE0; --info-soft:#17242C;
+  --mute:#9BAAB7; --mute-soft:#222E3A;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px rgba(0,0,0,.35);
+  --c1:#3987e5; --c2:#d95926; --c3:#199e70; --c4:#c98500;
+  --grid:#27333F; --axis:#7C8D9C;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0E1620; --surface:#16202B; --surface-2:#1C2733; --surface-3:#22303D;
+  --ink:#E6EDF3; --ink-2:#A8B8C6; --ink-3:#7C8D9C;
+  --line:#2C3A48; --line-2:#44566A;
+  --brand:#85A2E0; --brand-2:#ACC1EC; --brand-soft:#171D2C; --on-brand:#060B16;
+  --gold:#E09985; --gold-soft:#2C1B17;
+  --ok:#85E0B9; --ok-soft:#172C23;
+  --warn:#E0B985; --warn-soft:#2C2317;
+  --bad:#E0859F; --bad-soft:#2C171D;
+  --info:#85BDE0; --info-soft:#17242C;
+  --mute:#9BAAB7; --mute-soft:#222E3A;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px rgba(0,0,0,.35);
+  --c1:#3987e5; --c2:#d95926; --c3:#199e70; --c4:#c98500;
+  --grid:#27333F; --axis:#7C8D9C;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Sarabun",system-ui,sans-serif;font-size:15px;line-height:1.7}
+h1,h2,h3,h4,h5{font-family:"Noto Sans Thai","Sarabun",system-ui,sans-serif;margin:0;line-height:1.35;font-weight:600;text-wrap:balance}
+.sysname .w{white-space:nowrap}
+.top .nm span.w{display:inline;font-size:inherit;font-weight:inherit;opacity:1}
+p{margin:0}
+button{font-family:inherit}
+.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+/* ---- prototype banner ---- */
+#banner{position:relative;z-index:60;background:var(--gold-soft);
+  border-bottom:1px solid var(--gold);color:var(--gold);font-size:12.5px;
+  display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:center;padding:6px 16px}
+#banner b{font-weight:600}
+#banner button{background:transparent;border:1px solid var(--gold);color:var(--gold);border-radius:5px;
+  font-size:11.5px;padding:1px 9px;cursor:pointer}
+#banner button:hover{background:var(--gold);color:var(--surface)}
+
+/* ---- app shell ---- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--brand);color:var(--on-brand);
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:9px 18px}
+.top .lg{display:flex;gap:9px;align-items:center;cursor:pointer}
+.top .sq{width:30px;height:30px;flex:0 0 auto;border-radius:50%;background:#FFFFFF;
+  object-fit:contain;padding:1px;box-sizing:border-box;display:block;
+  box-shadow:0 0 0 1px rgba(0,0,0,.14)}
+.top .nm{font-family:"Noto Sans Thai","Sarabun",system-ui,sans-serif;font-size:14px;font-weight:600;line-height:1.2}
+.top .nm span{display:block;font-size:10.5px;font-weight:400;opacity:.8}
+.top .sp{flex:1}
+.roleswap{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.roleswap .lb{font-family:"Noto Sans Thai","Sarabun",system-ui,sans-serif;font-size:12px;
+  font-weight:600;color:var(--on-brand);opacity:.92;margin-right:2px;white-space:nowrap}
+@media(max-width:700px){.roleswap{width:100%}.roleswap .lb{width:100%;margin:0 0 2px}}
+.roleswap button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:var(--on-brand);
+  border-radius:20px;font-size:12px;padding:3px 12px;cursor:pointer}
+.roleswap button[aria-pressed="true"]{background:var(--on-brand);color:var(--brand);border-color:var(--on-brand);font-weight:600}
+.roleswap .rinfo{background:var(--gold);border:1px solid var(--gold);color:var(--gold-soft);
+  border-radius:20px;font-size:12px;font-weight:600;padding:3px 13px;cursor:pointer;margin-left:10px}
+.roleswap .rinfo:hover{filter:brightness(1.12)}
+.roleswap .rinfo[aria-current="page"]{box-shadow:0 0 0 2px var(--gold-soft)}
+.roleswap .rinfo:focus-visible{outline:2px solid var(--gold-soft);outline-offset:2px}
+@media(max-width:700px){.roleswap .rinfo{margin-left:0}}
+.roleswap button:focus-visible,.top .lg:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+.body{display:grid;grid-template-columns:212px 1fr;min-height:60vh;max-width:1280px;margin:0 auto;width:100%}
+@media(max-width:820px){.body{grid-template-columns:1fr}}
+.side{background:var(--surface);border-right:1px solid var(--line);padding:14px 10px;display:flex;flex-direction:column;gap:2px}
+@media(max-width:820px){.side{flex-direction:row;overflow-x:auto;min-width:0;border-right:0;border-bottom:1px solid var(--line);padding:9px 12px}}
+.side .sec{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);padding:12px 9px 4px}
+@media(max-width:820px){.side .sec{display:none}}
+.nv{display:flex;justify-content:space-between;gap:8px;align-items:center;background:none;border:0;
+  font-size:13px;color:var(--ink-2);padding:7px 10px;border-radius:6px;cursor:pointer;text-align:left;
+  white-space:normal;line-height:1.4}
+.nv > span:first-child{min-width:0;overflow-wrap:anywhere}
+.nv .cnt{flex:0 0 auto}
+.nv:hover{background:var(--surface-2)}
+.nv[aria-current="page"]{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.nv:focus-visible{outline:2px solid var(--brand-2);outline-offset:1px}
+.nv .cnt{font-family:"IBM Plex Mono",monospace;font-size:10.5px;background:var(--bad);color:#fff;border-radius:9px;padding:0 6px;line-height:1.6}
+
+.main{padding:20px 22px 48px;min-width:0;background:var(--bg)}
+@media(max-width:560px){.main{padding:16px}}
+.crumbs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--ink-3);margin-bottom:6px}
+.crumbs button{background:none;border:0;color:var(--brand-2);font-size:12px;cursor:pointer;padding:0;text-decoration:underline}
+.pagehead{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.pagehead h2{font-size:21px}
+.pagehead .ph-sub{width:100%;font-size:13.5px;color:var(--ink-2);margin-top:3px}
+
+/* ---- atoms ---- */
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:"Noto Sans Thai","Sarabun",system-ui,sans-serif;font-size:13px;
+  font-weight:500;border-radius:7px;padding:7px 15px;border:1px solid var(--line-2);background:var(--surface);
+  color:var(--ink-2);cursor:pointer}
+.btn:hover{border-color:var(--ink-3);color:var(--ink)}
+.btn:focus-visible{outline:2px solid var(--brand-2);outline-offset:2px}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+.btn.pri:hover{background:var(--brand-2);border-color:var(--brand-2);color:var(--on-brand)}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.bad{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btnrow{display:flex;flex-wrap:wrap;gap:9px;margin-top:6px}
+.btn.sm{font-size:12px;padding:4px 11px}
+
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:500;border-radius:20px;
+  padding:1px 10px;white-space:nowrap;font-family:"Noto Sans Thai","Sarabun",system-ui,sans-serif}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.st-draft{background:var(--mute-soft);color:var(--mute)}
+.st-wait{background:var(--warn-soft);color:var(--warn)}
+.st-fix{background:var(--bad-soft);color:var(--bad)}
+.st-approved{background:var(--info-soft);color:var(--info)}
+.st-published{background:var(--ok-soft);color:var(--ok)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:15px 17px;margin-bottom:14px}
+.card > h3{font-size:15.5px;margin-bottom:10px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:11px 14px}
+.tile .k{font-size:11.5px;color:var(--ink-3)}
+.tile .v{font-family:"Noto Sans Thai","Sarabun",system-ui,sans-serif;font-size:23px;font-weight:600;line-height:1.25}
+.tile.w .v{color:var(--warn)} .tile.b .v{color:var(--bad)} .tile.g .v{color:var(--ok)} .tile.i .v{color:var(--info)}
+
+.alert{border-radius:8px;padding:10px 13px;font-size:13.5px;margin-bottom:13px;border:1px solid}
+.alert.i{background:var(--info-soft);color:var(--info);border-color:var(--info)}
+.alert.w{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}
+.alert.b{background:var(--bad-soft);color:var(--bad);border-color:var(--bad)}
+.alert.g{background:var(--ok-soft);color:var(--ok);border-color:var(--ok)}
+.alert b{font-weight:600}
+.alert ul{margin:6px 0 0;padding-left:20px}
+.alert button.lnk{background:none;border:0;color:inherit;text-decoration:underline;cursor:pointer;font-size:13px;padding:0}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}}
+
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:13px}
+.field label{font-size:12.5px;color:var(--ink-2);font-family:"Noto Sans Thai","Sarabun",system-ui,sans-serif;font-weight:500}
+.field label .req{color:var(--bad)}
+.field input,.field select,.field textarea{
+  font-family:inherit;font-size:14px;color:var(--ink);background:var(--surface);
+  border:1px solid var(--line-2);border-radius:7px;padding:8px 11px;width:100%}
+.field textarea{min-height:104px;resize:vertical;line-height:1.65}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--brand-2);outline-offset:0;border-color:var(--brand-2)}
+.field .hint{font-size:11.5px;color:var(--ink-3)}
+.field.bad input,.field.bad select,.field.bad textarea{border-color:var(--bad);background:var(--bad-soft)}
+.field .err{font-size:12px;color:var(--bad);font-weight:500}
+.field .cnt{font-size:11.5px;color:var(--ink-3);text-align:right}
+.field .cnt.bad{color:var(--bad);font-weight:600}
+.ro{background:var(--surface-2);color:var(--ink-2)}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{font-size:12px;border:1px solid var(--line-2);border-radius:20px;padding:3px 11px;color:var(--ink-2);
+  background:var(--surface);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--on-brand);font-weight:500}
+.chip.tag{cursor:default;background:var(--brand-soft);border-color:var(--brand-2);color:var(--brand)}
+.chip.tag button{background:none;border:0;color:inherit;cursor:pointer;font-size:13px;padding:0 0 0 3px;line-height:1}
+.chip:focus-visible{outline:2px solid var(--brand-2);outline-offset:2px}
+
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:9px;background:var(--surface);margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
+th{background:var(--surface-2);text-align:left;font-family:"Noto Sans Thai","Sarabun",system-ui,sans-serif;font-weight:600;
+  font-size:11.5px;color:var(--ink-2);padding:9px 11px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 11px;border-bottom:1px solid var(--line);color:var(--ink-2);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td b{color:var(--ink);font-weight:600}
+
+.rec{border:1px solid var(--line);border-radius:9px;padding:13px 15px;background:var(--surface);margin-bottom:10px}
+.rec h4{font-size:15px}
+.rec .met{font-size:12px;color:var(--ink-3);margin-top:3px;display:flex;flex-wrap:wrap;gap:3px 14px}
+.rec .ab{font-size:13px;color:var(--ink-2);margin-top:7px}
+.rec .ft{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+
+.steps{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-bottom:16px;background:var(--surface)}
+.steps div{flex:1;min-width:120px;padding:8px 12px;font-size:12px;color:var(--ink-3);border-right:1px solid var(--line)}
+.steps div:last-child{border-right:0}
+.steps div.on{background:var(--brand);color:var(--on-brand);font-weight:600}
+.steps div.done{background:var(--brand-soft);color:var(--brand)}
+.steps b{display:block;font-family:"IBM Plex Mono",monospace;font-size:10px;opacity:.75;font-weight:500}
+
+.tl{border-left:2px solid var(--line);padding-left:16px;margin-left:6px}
+.tl .it{position:relative;padding-bottom:15px}
+.tl .it::before{content:"";position:absolute;left:-23px;top:6px;width:10px;height:10px;border-radius:50%;
+  background:var(--line-2);border:2px solid var(--bg)}
+.tl .it.done::before{background:var(--ok)}
+.tl .it.now::before{background:var(--warn)}
+.tl .t{font-size:14px;font-weight:600;font-family:"Noto Sans Thai","Sarabun",system-ui,sans-serif;color:var(--ink)}
+.tl .d{font-size:12px;color:var(--ink-3)}
+.tl .m{font-size:13px;color:var(--ink-2);margin-top:5px;background:var(--surface);border:1px solid var(--line);
+  border-radius:7px;padding:9px 12px}
+
+.ck{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink-2);padding:5px 0;cursor:pointer}
+.ck input{margin-top:5px;width:16px;height:16px;accent-color:var(--ok);flex:0 0 auto}
+.ck.no{color:var(--bad)}
+.sw{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--line);
+  border-radius:8px;padding:9px 12px;background:var(--surface-2);margin-bottom:8px}
+.sw .tt{font-size:13.5px;color:var(--ink)}
+.sw .ts{font-size:11.5px;color:var(--ink-3)}
+.sw input{width:18px;height:18px;accent-color:var(--ok);flex:0 0 auto}
+
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar{display:grid;grid-template-columns:152px 1fr 44px;gap:10px;align-items:center;font-size:12.5px;color:var(--ink-2)}
+@media(max-width:520px){.bar{grid-template-columns:104px 1fr 40px}}
+.bar .tr{height:17px;background:var(--surface-3);border-radius:4px;overflow:hidden}
+.bar .fl{height:100%;background:var(--brand-2);border-radius:4px}
+.bar .n{text-align:right;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink)}
+.bar .bl{min-width:0;overflow-wrap:anywhere;text-align:left;line-height:1.3}
+.bar-a{width:100%;background:none;border:0;padding:2px 0;cursor:pointer;font-family:inherit;color:var(--ink-2);border-radius:5px}
+.bar-a:hover .tr{outline:2px solid var(--brand-2);outline-offset:1px}
+.bar-a:hover .bl{color:var(--brand-2);font-weight:500}
+.bar-a:focus-visible{outline:2px solid var(--brand-2);outline-offset:2px}
+/* --- แผนภูมิวงแหวน --- */
+.donut-wrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.donut{width:172px;height:172px;flex:0 0 auto}
+.dn-total{fill:var(--ink);font-size:30px;font-weight:700;text-anchor:middle;font-family:"Noto Sans Thai","Sarabun",system-ui,sans-serif}
+.dn-lab{fill:var(--ink-3);font-size:13px;text-anchor:middle;font-family:"Noto Sans Thai","Sarabun",system-ui,sans-serif}
+.lg-list{flex:1;min-width:190px;display:flex;flex-direction:column;gap:3px}
+.lg-row{display:grid;grid-template-columns:13px 1fr auto auto;gap:9px;align-items:start;font-size:13px;
+  color:var(--ink-2);padding:4px 0;border-bottom:1px solid var(--line);line-height:1.35}
+.lg-row:last-child{border-bottom:0}
+.lg-row .dsw{width:13px;height:13px;border-radius:3px;padding:0;border:0;background-clip:padding-box;margin-top:3px}
+.lg-row .lg-n{min-width:0;overflow-wrap:anywhere}
+.lg-row .lg-v{color:var(--ink);font-weight:600;min-width:34px;text-align:right}
+.lg-row .lg-p{color:var(--ink-3);min-width:38px;text-align:right}
+/* --- แผนภูมิเส้น --- */
+.svg-wrap{overflow-x:auto;max-width:100%}
+.grid2>*,.tiles>*,.rolecards>*,.limits>*{min-width:0}
+.card{min-width:0}
+.trend{width:100%;min-width:430px;height:auto;display:block}
+.trend .gl{stroke:var(--grid);stroke-width:1}
+.trend .ar{fill:var(--c1);opacity:.13}
+.trend .ln{fill:none;stroke:var(--c1);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.trend .dot{fill:var(--c1);stroke:var(--surface);stroke-width:2}
+.trend .dot-em{fill:var(--c1);stroke:var(--surface);stroke-width:2.5}
+.trend .dl{fill:var(--ink);font-size:12px;font-weight:600;text-anchor:middle;font-family:"IBM Plex Mono",monospace}
+.trend .ax{fill:var(--axis);font-size:11px;text-anchor:middle;font-family:"IBM Plex Mono",monospace}
+.trend .ax-r{text-anchor:end}
+.chart-note{font-size:11.5px;color:var(--ink-3);margin-top:9px}
+/* --- แถบสัดส่วนเต็ม 100 --- */
+.stack{display:flex;height:26px;border-radius:5px;overflow:hidden;gap:2px;background:var(--surface-3);margin-bottom:10px}
+.stack i{display:block;height:100%}
+.funnel{display:flex;flex-direction:column;gap:7px}
+.fn{display:grid;grid-template-columns:118px 1fr 40px;gap:10px;align-items:center;font-size:12.5px;color:var(--ink-2)}
+@media(max-width:520px){.fn{grid-template-columns:96px 1fr 36px}}
+.fn .tr{height:17px;background:var(--surface-3);border-radius:4px;overflow:hidden}
+.fn .fl{height:100%;border-radius:4px}
+.fn .n{text-align:right;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink)}
+.faq{border:1px solid var(--line);border-radius:8px;background:var(--surface);margin-bottom:8px;overflow:hidden}
+.faq summary{cursor:pointer;padding:10px 14px;font-size:14px;font-weight:600;font-family:"Noto Sans Thai","Sarabun",system-ui,sans-serif;color:var(--ink);list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"+ ";color:var(--brand-2);font-weight:700}
+.faq[open] summary::before{content:"− "}
+.faq summary:focus-visible{outline:2px solid var(--brand-2);outline-offset:-2px}
+.faq .a{padding:0 14px 12px;font-size:13.5px;color:var(--ink-2)}
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px 24px;margin-bottom:16px}
+@media(max-width:560px){.hero{padding:16px}}
+.hero h2{font-size:clamp(20px,3.6vw,27px);letter-spacing:-.01em}
+.hero p.sub{font-size:14px;color:var(--ink-2);margin-top:7px;max-width:56ch}
+
+.lock{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:9px;padding:13px 15px;
+  display:flex;flex-wrap:wrap;gap:11px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.lock p{font-size:13px;color:var(--gold)}
+.lock-alt{flex:0 0 100%;min-width:0;font-size:12.5px;color:var(--gold);opacity:.85;
+  border-top:1px dashed var(--gold);padding-top:9px;margin-top:2px}
+.lock-alt{flex:0 0 100%;min-width:0;font-size:12.5px;color:var(--gold);opacity:.85;
+  border-top:1px dashed var(--gold);padding-top:9px;margin-top:2px}
+.kv{display:grid;grid-template-columns:200px 1fr;gap:4px 14px;font-size:13.5px}
+@media(max-width:620px){.kv{grid-template-columns:1fr}}
+.kv dt{color:var(--ink-3);font-size:12.5px}
+.kv dd{margin:0;color:var(--ink)}
+
+/* role cards on home */
+.rolecards{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px}
+.rolecard{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:14px 16px;cursor:pointer;display:flex;flex-direction:column;gap:5px}
+.rolecard:hover{border-color:var(--brand-2);box-shadow:var(--shadow)}
+.rolecard:focus-visible{outline:2px solid var(--brand-2);outline-offset:2px}
+.rolecard .n{font-family:"Noto Sans Thai","Sarabun",system-ui,sans-serif;font-size:15px;font-weight:600;color:var(--ink)}
+.rolecard .d{font-size:12.5px;color:var(--ink-2)}
+.rolecard .rmenu{display:block;font-size:11.5px;color:var(--ink-3);line-height:1.55;margin-top:2px}
+.rolecard .rmenu b{display:inline;color:var(--ink-2);font-weight:600}
+.rolecard .go{font-size:12px;color:var(--brand-2);font-weight:600;margin-top:auto;padding-top:6px}
+.rolecard.on{border-color:var(--brand-2);background:var(--brand-soft);box-shadow:inset 3px 0 0 var(--brand-2)}
+.rolecard.on .go{color:var(--ink-3);font-weight:500}
+.rolecard .n{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rolecard .now{font-size:10.5px;font-weight:600;letter-spacing:.3px;color:var(--on-brand);
+  background:var(--brand-2);border-radius:999px;padding:2px 8px}
+
+/* ข้อความที่พบในเนื้อหาเอกสาร และยอดเปิดดู */
+.ftsnip{font-size:12.5px;color:var(--ink-2);line-height:1.6;background:var(--surface-2);
+  border-left:3px solid var(--brand-2);border-radius:0 7px 7px 0;padding:8px 11px;margin:6px 0 0;overflow-wrap:anywhere}
+.ftsnip b{color:var(--brand-2);font-weight:600}
+.ftsnip mark{background:var(--warn-soft);color:var(--warn);font-weight:600;border-radius:3px;padding:0 2px}
+.vw{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+.toplist{display:flex;flex-direction:column}
+.toprow{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:start;width:100%;text-align:left;
+  background:none;border:0;border-bottom:1px solid var(--line);padding:9px 2px;cursor:pointer;font:inherit;color:inherit}
+.toprow:last-child{border-bottom:0}
+.toprow:hover .tt,.toprow:focus-visible .tt{color:var(--brand-2);text-decoration:underline}
+.toprow:focus-visible{outline:2px solid var(--brand-2);outline-offset:2px;border-radius:6px}
+.toprow .rk{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;color:var(--on-brand);
+  background:var(--brand-2);border-radius:50%;width:22px;height:22px;display:grid;place-items:center;margin-top:1px}
+.toprow:first-child .rk{background:var(--gold);color:var(--gold-soft)}
+.toprow > span:nth-child(2){min-width:0}
+.toprow .tt{display:block;font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.4;overflow-wrap:anywhere}
+.toprow .ms{display:block;font-size:11.5px;color:var(--ink-3);margin-top:3px;line-height:1.45;overflow-wrap:anywhere}
+.toprow .vn{font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:600;color:var(--brand-2);white-space:nowrap;margin-top:2px}
+
+/* แผงสืบค้นขั้นสูงแบบพับได้ */
+.advbox{border:1px solid var(--line);border-radius:10px;background:var(--surface-2);padding:14px 16px;margin-bottom:12px}
+.advbox .advhd{font-size:12.5px;color:var(--ink-2);margin-bottom:10px}
+.advbox .btnrow{margin-top:4px}
+
+/* ช่องแนบเอกสารยืนยันสังกัด */
+.updrop{border:1px dashed var(--line-2);border-radius:9px;padding:14px 16px;margin-top:10px;background:var(--surface)}
+.updrop input[type=file]{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.updrop .pick{display:inline-block;cursor:pointer;background:var(--surface-2);border:1px solid var(--line-2);
+  border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--ink)}
+.updrop .pick:hover{border-color:var(--brand-2);color:var(--brand-2)}
+.updrop input[type=file]:focus-visible + .pick{outline:2px solid var(--brand-2);outline-offset:2px}
+.updrop .picked{display:flex;gap:9px;align-items:center;margin-top:10px;font-size:12.5px;color:var(--ok);
+  background:var(--ok-soft);border:1px solid var(--ok);border-radius:8px;padding:8px 11px;overflow-wrap:anywhere}
+
+/* กล่องตรวจสอบสังกัดกับ ศธ.02 */
+.vfy{display:flex;gap:13px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;
+  padding:14px 16px;margin-top:14px;background:var(--surface-2)}
+.vfy.ok{border-color:var(--ok);background:var(--ok-soft)}
+.vfy.bad{border-color:var(--bad);background:var(--bad-soft)}
+.vfy .ic{flex:0 0 auto;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  font-size:16px;font-weight:700;line-height:1}
+.vfy.ok .ic{background:var(--ok);color:#fff}
+.vfy.bad .ic{background:var(--bad);color:#fff}
+.vfy .tx{min-width:0}
+.vfy .tt{font-family:"Noto Sans Thai","Sarabun",system-ui,sans-serif;font-size:14px;font-weight:600;color:var(--ink)}
+.vfy.ok .tt{color:var(--ok)} .vfy.bad .tt{color:var(--bad)}
+.vfy .ds{font-size:12.5px;color:var(--ink-2);margin-top:3px;line-height:1.5;overflow-wrap:anywhere}
+.spin{flex:0 0 auto;width:30px;height:30px;border-radius:50%;box-sizing:border-box;
+  border:3px solid var(--line-2);border-top-color:var(--brand-2);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
+
+/* คำสำคัญและทิศทางการวิจัย */
+.kwlist{display:flex;flex-direction:column}
+.kwrow{display:grid;grid-template-columns:150px 1fr 44px 96px;gap:10px;align-items:center;
+  width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);
+  padding:7px 2px;cursor:pointer;font:inherit;color:inherit}
+.kwrow:last-child{border-bottom:0}
+.kwrow:hover .kw-n,.kwrow:focus-visible .kw-n{color:var(--brand-2);text-decoration:underline}
+.kwrow:focus-visible{outline:2px solid var(--brand-2);outline-offset:2px;border-radius:6px}
+.kwrow .kw-n{font-size:13px;color:var(--ink);min-width:0;overflow-wrap:anywhere;line-height:1.3}
+.kwrow .kw-c{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink);text-align:right}
+.kwrow .tr{height:15px;background:var(--surface-3);border-radius:4px;overflow:hidden;min-width:40px}
+.kwrow .fl{height:100%;background:var(--brand-2);border-radius:4px}
+.kwrow:hover .tr,.kwrow:focus-visible .tr{outline:2px solid var(--brand-2);outline-offset:1px}
+.kw-t{font-size:11.5px;font-weight:600;border-radius:999px;padding:3px 8px;text-align:center;white-space:nowrap}
+.kw-t.up{background:var(--ok-soft);color:var(--ok)}
+.kw-t.flat{background:var(--surface-3);color:var(--ink-2)}
+.kw-t.down{background:var(--warn-soft);color:var(--warn)}
+@media(max-width:600px){
+  .kwrow{grid-template-columns:1fr 44px 96px;grid-template-areas:"n n n" "b c t";row-gap:5px;padding:9px 2px}
+  .kwrow .kw-n{grid-area:n}.kwrow .tr{grid-area:b}.kwrow .kw-c{grid-area:c}.kwrow .kw-t{grid-area:t}}
+
+/* modal + toast */
+#modal{position:fixed;inset:0;z-index:100;background:rgba(10,18,26,.5);display:grid;place-items:center;padding:20px}
+#modal .box{background:var(--surface);border:1px solid var(--line);border-radius:12px;max-width:440px;width:100%;
+  padding:20px 22px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+#modal h3{font-size:17px;margin-bottom:8px}
+#modal p{font-size:13.5px;color:var(--ink-2);margin-bottom:14px}
+#toasts{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);
+  z-index:110;display:flex;flex-direction:column;gap:8px;width:min(380px,calc(100% - 32px));pointer-events:none}
+#toasts .toast{pointer-events:auto}
+.toast{background:var(--ink);color:var(--bg);border-radius:9px;padding:10px 14px;font-size:13.5px;
+  display:flex;gap:12px;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.toast.g{background:var(--ok);color:#fff}
+.toast.b{background:var(--bad);color:#fff}
+.toast button{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);color:inherit;
+  border-radius:6px;font-size:12px;padding:2px 10px;cursor:pointer;flex:0 0 auto}
+.foot{max-width:1280px;margin:0 auto;padding:16px 22px 40px;font-size:12px;color:var(--ink-3);border-top:1px solid var(--line)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="banner">
+  <span><b>เว็บจำลองต้นแบบเพื่อการศึกษา</b> · ข้อมูลทั้งหมดเป็นตัวอย่างสมมติ ไม่ใช่ข้อมูลจริงของหน่วยงาน</span>
+  <button id="resetBtn" type="button">เริ่มต้นใหม่</button>
+</div>
+<div id="app"></div>
+<div id="toasts"></div>
+
+<script>
+"use strict";
+/* ============ ตัวช่วย ============ */
+var h = function(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){
+  return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); };
+var $ = function(id){ return document.getElementById(id); };
+var app = $('app');
+
+var ST_LABEL = {draft:'ร่าง', wait:'รอตรวจสอบ', fix:'ต้องแก้ไข', approved:'อนุมัติ', published:'เผยแพร่'};
+var TYPES = ['งานวิจัยเพื่อพัฒนาชุมชน','งานวิจัยในห้องเรียน','งานวิจัยสิ่งประดิษฐ์และนวัตกรรม'];
+var FUNDS = [
+ 'ทุนวิจัยและนวัตกรรมอาชีวศึกษา สอศ.',
+ 'ทุนสิ่งประดิษฐ์คนรุ่นใหม่',
+ 'ทุนโครงงานวิทยาศาสตร์อาชีวศึกษา',
+ 'ทุนสนับสนุนการวิจัยและนวัตกรรม สำนักงานการวิจัยแห่งชาติ',
+ 'ทุนสนับสนุนงานมูลฐาน กองทุนส่งเสริม ววน.'];
+var SRC_IN = 'งบประมาณภายใน สอศ.', SRC_NRCT = 'งบประมาณภายนอก สอศ. (วช.)', SRC_TSRI = 'งบประมาณภายนอก สอศ. (สกสว.)';
+/* แหล่งทุนอนุมานจากประเภททุน ไม่ได้เป็นรายการเมทาดาทาเพิ่ม */
+var FUND_SRC = {
+ 'ทุนวิจัยและนวัตกรรมอาชีวศึกษา สอศ.':'งบประมาณภายใน สอศ.',
+ 'ทุนสิ่งประดิษฐ์คนรุ่นใหม่':'งบประมาณภายใน สอศ.',
+ 'ทุนโครงงานวิทยาศาสตร์อาชีวศึกษา':'งบประมาณภายใน สอศ.',
+ 'ทุนสนับสนุนการวิจัยและนวัตกรรม สำนักงานการวิจัยแห่งชาติ':'งบประมาณภายนอก สอศ. (วช.)',
+ 'ทุนสนับสนุนงานมูลฐาน กองทุนส่งเสริม ววน.':'งบประมาณภายนอก สอศ. (สกสว.)'};
+function srcOf(r){ return FUND_SRC[r.fund] || "ไม่ระบุแหล่งทุน"; }
+var SUBJECTS = {
+ 'ช่างอุตสาหกรรม':['ไฟฟ้ากำลัง','อิเล็กทรอนิกส์','เครื่องกล','ก่อสร้าง','เทคนิคโลหะ'],
+ 'เกษตรกรรม':['พืชศาสตร์','สัตวศาสตร์','เทคโนโลยีการแปรรูปผลผลิตเกษตร','ประมง'],
+ 'บริหารธุรกิจ':['การบัญชี','การตลาด','คอมพิวเตอร์ธุรกิจ','การจัดการโลจิสติกส์'],
+ 'คหกรรม':['อาหารและโภชนาการ','ผ้าและเครื่องแต่งกาย','คหกรรมศาสตร์'],
+ 'ศิลปกรรม':['คอมพิวเตอร์กราฟิก','การออกแบบ','เทคโนโลยีศิลปกรรม'],
+ 'อุตสาหกรรมท่องเที่ยว':['การโรงแรม','การท่องเที่ยว']
+};
+var INSTS = [
+ 'วิทยาลัยเทคนิคสัตหีบ','วิทยาลัยเทคนิคสุราษฎร์ธานี','วิทยาลัยเทคนิคนครอุบล','วิทยาลัยอาชีวศึกษาภูเก็ต',
+ 'วิทยาลัยเทคนิคเชียงใหม่','วิทยาลัยเกษตรและเทคโนโลยีเพชรบุรี','วิทยาลัยการอาชีพนวมินทราชูทิศ',
+ 'วิทยาลัยสารพัดช่างนครปฐม','วิทยาลัยเทคนิคขอนแก่น','วิทยาลัยเกษตรและเทคโนโลยีลพบุรี',
+ 'วิทยาลัยเทคนิคนครสวรรค์','วิทยาลัยการอาชีพบ้านไผ่','วิทยาลัยการอาชีพหลังสวน',
+ 'วิทยาลัยอาชีวศึกษาอุตรดิตถ์','วิทยาลัยการอาชีพนครศรีธรรมราช'];
+var VOCAB = ['พลังงานแสงอาทิตย์','เซลล์แสงอาทิตย์','ชีวมวล','ไฟฟ้ากำลัง','สื่อการสอน','ชุดสาธิต','ความเป็นจริงเสมือน','อินเทอร์เน็ตของสรรพสิ่ง','เกษตรอัจฉริยะ','การแปรรูปอาหาร','วิสาหกิจชุมชน','บรรจุภัณฑ์','ถ่านอัดแท่ง','เครื่องอบแห้ง','ระบบควบคุมอัตโนมัติ','การจัดการเรียนรู้','ทวิภาคี','งานเชื่อมโลหะ'];
+var LEVELS = ['ปวช.','ปวส.','ปวช. และ ปวส.','ปริญญาตรีสายเทคโนโลยี'];
+var AREAS = [
+ 'กรุงเทพมหานคร','จังหวัดขอนแก่น','จังหวัดชลบุรี',
+ 'จังหวัดชุมพร','จังหวัดนครปฐม','จังหวัดนครศรีธรรมราช',
+ 'จังหวัดนครสวรรค์','จังหวัดภูเก็ต','จังหวัดระยอง',
+ 'จังหวัดลพบุรี','จังหวัดสุราษฎร์ธานี','จังหวัดอุตรดิตถ์',
+ 'จังหวัดอุบลราชธานี','จังหวัดเชียงราย','จังหวัดเชียงใหม่',
+ 'จังหวัดเพชรบุรี'];
+
+var ME = 'นายสมชาย ใจดี';
+var MY_INST = 'วิทยาลัยเทคนิคสัตหีบ';
+var REGION = {
+ 'จังหวัดชลบุรี':'ภาคตะวันออก','จังหวัดระยอง':'ภาคตะวันออก',
+ 'จังหวัดลพบุรี':'ภาคกลาง','จังหวัดเพชรบุรี':'ภาคกลาง',
+ 'กรุงเทพมหานคร':'ภาคกลาง','จังหวัดนครปฐม':'ภาคกลาง',
+ 'จังหวัดนครสวรรค์':'ภาคเหนือ','จังหวัดเชียงใหม่':'ภาคเหนือ',
+ 'จังหวัดเชียงราย':'ภาคเหนือ','จังหวัดอุตรดิตถ์':'ภาคเหนือ',
+ 'จังหวัดขอนแก่น':'ภาคตะวันออกเฉียงเหนือ','จังหวัดอุบลราชธานี':'ภาคตะวันออกเฉียงเหนือ',
+ 'จังหวัดชุมพร':'ภาคใต้','จังหวัดภูเก็ต':'ภาคใต้',
+ 'จังหวัดสุราษฎร์ธานี':'ภาคใต้','จังหวัดนครศรีธรรมราช':'ภาคใต้'};
+function regionOf(r){ return REGION[r.area] || 'ไม่ระบุพื้นที่'; }
+
+/* เมทาดาทา 27 รายการ = ดับลินคอร์ 15 + ส่วนขยายอาชีวศึกษา 12 */
+var META_DC = [
+ ['Title','ชื่อเรื่อง','ชื่อผลงานภาษาไทยและภาษาอังกฤษ'],
+ ['Creator','ผู้สร้างสรรค์','หัวหน้าโครงการวิจัย'],
+ ['Subject','หัวเรื่อง','คำสำคัญจากบัญชีคำศัพท์ควบคุม'],
+ ['Description','คำอธิบาย','บทคัดย่อไม่น้อยกว่า 250 ตัวอักษร'],
+ ['Publisher','หน่วยงานเผยแพร่','สำนักวิจัยและพัฒนาการอาชีวศึกษา'],
+ ['Contributor','ผู้ร่วมสร้างสรรค์','ผู้ร่วมวิจัยและที่ปรึกษา'],
+ ['Date','ปี','ปีที่ดำเนินการแล้วเสร็จ'],
+ ['Type','ประเภท','งานวิจัยเพื่อพัฒนาชุมชน · งานวิจัยในห้องเรียน · งานวิจัยสิ่งประดิษฐ์และนวัตกรรม'],
+ ['Format','รูปแบบ','ชนิดและขนาดไฟล์'],
+ ['Identifier','รหัส','รหัสผลงานที่ระบบกำหนดให้'],
+ ['Source','ต้นฉบับ','แหล่งที่มาของผลงานเดิม ถ้าเป็นการต่อยอด'],
+ ['Language','ภาษา','ภาษาของเนื้อหาผลงาน'],
+ ['Relation','ความเกี่ยวข้อง','ผลงานที่เกี่ยวข้องหรือต่อยอด'],
+ ['Coverage','ขอบเขต','พื้นที่และช่วงเวลาที่ดำเนินการ'],
+ ['Rights','สิทธิ์','ระดับการเข้าถึงและการยินยอมเผยแพร่']
+];
+var META_EXT = [
+ ['ประเภททุนที่ได้รับ','จำแนกตามโครงการทุน ใช้อนุมานแหล่งทุนวิจัยสามกลุ่ม'],
+ ['ปีงบประมาณที่ได้รับทุน','แยกจากปีที่ดำเนินการแล้วเสร็จ'],
+ ['สถานศึกษาต้นสังกัด','เลือกจากรายการควบคุม 429 แห่ง'],
+ ['สถาบันการอาชีวศึกษา','หน่วยงานระดับภูมิภาค 23 แห่ง'],
+ ['ประเภทวิชา','9 ประเภทวิชาตามหลักสูตรอาชีวศึกษา'],
+ ['สาขาวิชา','เปลี่ยนตามประเภทวิชาที่เลือก'],
+ ['ระดับการศึกษาที่นำไปใช้','ปวช. ปวส. หรือปริญญาตรีสายเทคโนโลยี'],
+ ['กลุ่มเป้าหมาย','ผู้ที่ได้ประโยชน์จากผลงาน'],
+ ['สถานะการนำไปใช้ประโยชน์','หน่วยงานที่นำไปใช้และจำนวนผู้ได้ประโยชน์'],
+ ['ทรัพย์สินทางปัญญา','สถานะและเลขที่คำขอสิทธิบัตรหรืออนุสิทธิบัตร'],
+ ['รางวัลที่ได้รับ','ชื่อรางวัล ระดับ และผู้มอบ'],
+ ['สถานะการเผยแพร่','ร่าง รอตรวจสอบ ต้องแก้ไข อนุมัติ เผยแพร่']
+];
+
+function seed(){
+ return [
+  { id:'VEC-2568-INV-00417', title:'การพัฒนาชุดสาธิตระบบผลิตไฟฟ้าจากพลังงานแสงอาทิตย์สำหรับการเรียนการสอน',
+    titleEn:'Development of a Solar Power Demonstration Set for Instruction', type:'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม',
+    fund:FUNDS[1], year:'2568', yearDone:'2568', cat:'ช่างอุตสาหกรรม', major:'ไฟฟ้ากำลัง', inst:MY_INST,
+    lead:ME, co:'นางสาววรรณา พูลผล, นายกิตติ ศรีสุข', level:'ปวช. และ ปวส.',
+    target:'ครูผู้สอนและผู้เรียนรายวิชาไฟฟ้ากำลัง', area:'จังหวัดชลบุรี',
+    abstract:'การวิจัยครั้งนี้มีวัตถุประสงค์เพื่อพัฒนาและหาประสิทธิภาพชุดสาธิตระบบผลิตไฟฟ้าจากพลังงานแสงอาทิตย์ขนาดพกพา สำหรับใช้ประกอบการเรียนการสอนรายวิชาไฟฟ้ากำลัง ระดับประกาศนียบัตรวิชาชีพ ดำเนินการโดยออกแบบชุดสาธิตให้ประกอบด้วยแผงเซลล์แสงอาทิตย์ เครื่องควบคุมการประจุ แบตเตอรี่ และชุดแสดงผล จากนั้นนำไปทดลองใช้กับกลุ่มตัวอย่างจำนวน 60 คน ผลการทดลองพบว่าชุดสาธิตมีประสิทธิภาพอยู่ในระดับมาก และผู้เรียนมีผลสัมฤทธิ์ทางการเรียนสูงขึ้นอย่างมีนัยสำคัญทางสถิติที่ระดับ .05',
+    kw:['พลังงานแสงอาทิตย์','ชุดสาธิต','ไฟฟ้ากำลัง','สื่อการสอน'], status:'published', owner:ME,
+    files:{full:true,abs:true,img:true}, consent:{pub:true,req:true,contact:false,hold:false},
+    util:{orgs:[{n:'วิทยาลัยเทคนิคระยอง',u:'ใช้ประกอบการสอนรายวิชาไฟฟ้ากำลัง',y:'2569'},
+                {n:'วิทยาลัยการอาชีพพนัสนิคม',u:'ใช้ประกอบการสอน',y:'2569'}],
+          people:'480', ip:'ยื่นคำขออนุสิทธิบัตรแล้ว', ipno:'2503001842', awards:1},
+    hist:[{d:'2 ส.ค. 2568',t:'ส่งผลงานเข้าระบบ'},{d:'6 ส.ค. 2568',t:'เจ้าหน้าที่ตรวจสอบและอนุมัติ'},{d:'18 ก.ย. 2569',t:'เผยแพร่บนระบบ'}] },
+
+  { id:'VEC-2568-COM-00902', title:'เตาอบพลังงานแสงอาทิตย์สำหรับกลุ่มวิสาหกิจชุมชนแปรรูปกล้วย',
+    titleEn:'', type:'งานวิจัยเพื่อพัฒนาชุมชน', fund:FUNDS[0], year:'2568', yearDone:'2569',
+    cat:'เกษตรกรรม', major:'เทคโนโลยีการแปรรูปผลผลิตเกษตร', inst:'วิทยาลัยเกษตรและเทคโนโลยีลพบุรี',
+    lead:ME, co:'นางสาววรรณา พูลผล', level:'ปวส.', target:'กลุ่มวิสาหกิจชุมชนแปรรูปกล้วย อ.ท่าวุ้ง', area:'จังหวัดลพบุรี',
+    abstract:'การพัฒนาเตาอบพลังงานแสงอาทิตย์…',
+    kw:['พลังงานแสงอาทิตย์','การแปรรูปอาหาร','วิสาหกิจชุมชน'], status:'fix', owner:ME,
+    files:{full:true,abs:false,img:true}, consent:{pub:true,req:true,contact:false,hold:false}, util:null,
+    hist:[{d:'2 ก.ย. 2569',t:'ส่งผลงานเข้าระบบ'},{d:'4 ก.ย. 2569',t:'เจ้าหน้าที่รับเรื่องและตรวจสอบความครบถ้วน'},
+          {d:'5 ก.ย. 2569',t:'ตรวจสอบความซ้ำซ้อนกับผลงานในคลัง ไม่พบความซ้ำซ้อน'}],
+    feedback:['บทคัดย่อยังไม่ครอบคลุมวิธีดำเนินการและผลการทดลอง ขอให้เพิ่มความยาวไม่น้อยกว่า 250 ตัวอักษร',
+              'ยังไม่ได้แนบบทคัดย่อภาษาอังกฤษตามเอกสารบังคับ',
+              'ขอให้เพิ่มคำสำคัญให้ครบอย่างน้อย 3 คำ ตามบัญชีคำศัพท์ควบคุม'],
+    due:'30 ก.ย. 2569' },
+
+  { id:'VEC-2569-INV-01133', title:'การพัฒนาสื่อการสอนเสมือนจริงสำหรับงานเชื่อมโลหะ', titleEn:'',
+    type:'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม', fund:FUNDS[0], year:'2569', yearDone:'2569', cat:'ช่างอุตสาหกรรม', major:'เทคนิคโลหะ',
+    inst:'วิทยาลัยเทคนิคนครสวรรค์', lead:'นายประเสริฐ มั่นคง', co:'', level:'ปวส.',
+    target:'ผู้เรียนสาขาวิชาเทคนิคโลหะ', area:'จังหวัดนครสวรรค์',
+    abstract:'การวิจัยนี้มีวัตถุประสงค์เพื่อพัฒนาสื่อการสอนเสมือนจริงสำหรับฝึกทักษะงานเชื่อมโลหะ โดยจำลองสภาพแวดล้อมการเชื่อมและให้ผู้เรียนฝึกท่าทางก่อนลงมือปฏิบัติจริง ผลการทดลองใช้กับกลุ่มตัวอย่าง 40 คน พบว่าผู้เรียนมีความมั่นใจเพิ่มขึ้นและอัตราการเกิดชิ้นงานเสียลดลง',
+    kw:['งานเชื่อมโลหะ','สื่อการสอน','VR'], status:'wait', owner:'นายประเสริฐ มั่นคง',
+    files:{full:true,abs:true,img:true}, consent:{pub:true,req:true,contact:false,hold:false}, util:null,
+    sim:62, simWith:'สื่อการสอนเสมือนจริงงานเชื่อมไฟฟ้าเบื้องต้น (2566)',
+    hist:[{d:'17 ก.ย. 2569',t:'ส่งผลงานเข้าระบบ'}], assignee:'' },
+
+  { id:'VEC-2569-COM-01150', title:'โครงงานผลิตถ่านอัดแท่งจากเปลือกทุเรียน', titleEn:'',
+    type:'งานวิจัยเพื่อพัฒนาชุมชน', fund:FUNDS[2], year:'2569', yearDone:'2569', cat:'เกษตรกรรม', major:'พืชศาสตร์',
+    inst:'วิทยาลัยการอาชีพหลังสวน', lead:'นางสาวกมลชนก แสงทอง', co:'', level:'ปวช.',
+    target:'ชุมชนและวิสาหกิจชุมชน', area:'จังหวัดชุมพร',
+    abstract:'โครงงานนี้ศึกษาการนำเปลือกทุเรียนซึ่งเป็นวัสดุเหลือทิ้งทางการเกษตรมาผลิตเป็นถ่านอัดแท่ง โดยเปรียบเทียบอัตราส่วนระหว่างผงถ่านกับตัวประสานสามสูตร ผลการทดลองพบว่าสูตรที่สองให้ค่าความร้อนสูงที่สุดและมีควันน้อยที่สุด',
+    kw:['ถ่านอัดแท่ง','ชีวมวล','เปลือกทุเรียน'], status:'approved', owner:'นางสาวกมลชนก แสงทอง',
+    files:{full:true,abs:true,img:true}, consent:{pub:true,req:true,contact:false,hold:false}, util:null,
+    hist:[{d:'20 ก.ย. 2569',t:'ส่งผลงานเข้าระบบ'},{d:'22 ก.ย. 2569',t:'เจ้าหน้าที่อนุมัติ โดย อรสิริ'}], assignee:'อรสิริ' },
+
+  { id:'VEC-2567-COM-00655', title:'ระบบควบคุมโรงเรือนอัจฉริยะสำหรับการปลูกเมล่อน', titleEn:'',
+    type:'งานวิจัยเพื่อพัฒนาชุมชน', fund:FUNDS[0], year:'2567', yearDone:'2567', cat:'เกษตรกรรม', major:'พืชศาสตร์',
+    inst:'วิทยาลัยเกษตรและเทคโนโลยีลพบุรี', lead:'นายอนุชา ทองแท้', co:'', level:'ปวส.',
+    target:'เกษตรกรผู้ปลูกเมล่อนในโรงเรือน', area:'จังหวัดลพบุรี',
+    abstract:'พัฒนาระบบควบคุมสภาพแวดล้อมในโรงเรือนปลูกเมล่อนโดยใช้เซนเซอร์วัดอุณหภูมิ ความชื้น และความเข้มแสง เชื่อมต่อกับระบบสั่งการผ่านอินเทอร์เน็ต ผลการใช้งานพบว่าผลผลิตมีคุณภาพสม่ำเสมอขึ้นและลดแรงงานดูแลลงร้อยละ 40',
+    kw:['เกษตรอัจฉริยะ','อินเทอร์เน็ตของสรรพสิ่ง','ระบบควบคุมอัตโนมัติ'], status:'published', owner:'นายอนุชา ทองแท้',
+    files:{full:true,abs:true,img:true}, consent:{pub:true,req:true,contact:false,hold:false},
+    util:{orgs:[{n:'กลุ่มเกษตรกรบ้านหนองเต่า',u:'ติดตั้งใช้งานจริงในโรงเรือน 4 หลัง',y:'2568'}],people:'120',ip:'ยังไม่ยื่น',ipno:'',awards:0},
+    hist:[{d:'10 มี.ค. 2567',t:'ส่งผลงานเข้าระบบ'},{d:'2 เม.ย. 2567',t:'เผยแพร่บนระบบ'}] },
+
+  { id:'VEC-2567-CLS-00188', title:'การพัฒนารูปแบบการจัดการเรียนรู้แบบทวิภาคีร่วมกับสถานประกอบการขนาดกลาง',
+    titleEn:'', type:'งานวิจัยในห้องเรียน', fund:FUNDS[3], year:'2567', yearDone:'2567', cat:'บริหารธุรกิจ', major:'การจัดการโลจิสติกส์',
+    inst:'วิทยาลัยอาชีวศึกษาอุตรดิตถ์', lead:'นางสาวปัทมา ใจงาม', co:'', level:'ปวส.',
+    target:'ครูนิเทศและสถานประกอบการคู่ความร่วมมือ', area:'จังหวัดอุตรดิตถ์',
+    abstract:'การวิจัยนี้พัฒนารูปแบบการจัดการเรียนรู้แบบทวิภาคีที่เหมาะกับสถานประกอบการขนาดกลาง โดยศึกษาสภาพปัญหาจากครูนิเทศ 25 คนและผู้ประกอบการ 12 แห่ง แล้วยกร่างรูปแบบและตรวจสอบโดยผู้ทรงคุณวุฒิ ผลการประเมินความเหมาะสมอยู่ในระดับมากที่สุด',
+    kw:['ทวิภาคี','การจัดการเรียนรู้'], status:'published', owner:'นางสาวปัทมา ใจงาม',
+    files:{full:true,abs:true,img:true}, consent:{pub:true,req:true,contact:false,hold:false}, util:null,
+    hist:[{d:'5 ม.ค. 2567',t:'ส่งผลงานเข้าระบบ'},{d:'1 ก.พ. 2567',t:'เผยแพร่บนระบบ'}] },
+
+  { id:'VEC-2565-INV-00120', title:'ชุดฝึกปฏิบัติการเดินสายไฟฟ้าภายในอาคาร', titleEn:'',
+    type:'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม', fund:FUNDS[1], year:'2565', yearDone:'2565', cat:'ช่างอุตสาหกรรม', major:'ไฟฟ้ากำลัง',
+    inst:MY_INST, lead:ME, co:'', level:'ปวช.', target:'ผู้เรียนรายวิชาการติดตั้งไฟฟ้า', area:'จังหวัดชลบุรี',
+    abstract:'พัฒนาชุดฝึกปฏิบัติการเดินสายไฟฟ้าภายในอาคารแบบเคลื่อนย้ายได้ เพื่อลดข้อจำกัดด้านพื้นที่ห้องปฏิบัติการ ผลการประเมินโดยผู้เชี่ยวชาญพบว่าชุดฝึกมีความเหมาะสมในระดับมากที่สุด และช่วยให้ผู้เรียนฝึกซ้ำได้บ่อยขึ้น',
+    kw:['ไฟฟ้ากำลัง','ชุดสาธิต','สื่อการสอน'], status:'published', owner:ME,
+    files:{full:true,abs:true,img:true}, consent:{pub:true,req:true,contact:false,hold:false},
+    util:{orgs:[],people:'',ip:'ได้รับอนุสิทธิบัตรแล้ว',ipno:'21045',awards:0},
+    hist:[{d:'8 ก.พ. 2565',t:'ส่งผลงานเข้าระบบ'},{d:'1 มี.ค. 2565',t:'เผยแพร่บนระบบ'}] },
+
+  { id:'VEC-2569-DRAFT-01', title:'การศึกษาความพึงพอใจต่อการใช้ห้องปฏิบัติการไฟฟ้า', titleEn:'',
+    type:'งานวิจัยในห้องเรียน', fund:'', year:'2569', yearDone:'', cat:'ช่างอุตสาหกรรม', major:'ไฟฟ้ากำลัง', inst:MY_INST,
+    lead:ME, co:'', level:'', target:'', area:'', abstract:'', kw:[], status:'draft', owner:ME,
+    files:{full:false,abs:false,img:false}, consent:{pub:true,req:true,contact:false,hold:false}, util:null, hist:[] }
+ ].concat(bulk());
+}
+
+/* ---- ชุดข้อมูลจำลองขนาดใหญ่ เพื่อให้แผนภูมิมีรูปทรงที่อ่านได้จริง ---- */
+var INST_LIST = [
+ 'วิทยาลัยเทคนิคสุราษฎร์ธานี','วิทยาลัยเทคนิคนครอุบล','วิทยาลัยอาชีวศึกษาภูเก็ต',
+ 'วิทยาลัยเทคนิคเชียงใหม่','วิทยาลัยเกษตรและเทคโนโลยีเพชรบุรี','วิทยาลัยการอาชีพนวมินทราชูทิศ',
+ 'วิทยาลัยสารพัดช่างนครปฐม','วิทยาลัยเทคนิคขอนแก่น','วิทยาลัยเกษตรและเทคโนโลยีลพบุรี',
+ 'วิทยาลัยเทคนิคนครสวรรค์','วิทยาลัยการอาชีพบ้านไผ่','วิทยาลัยการอาชีพหลังสวน',
+ 'วิทยาลัยเทคนิคสัตหีบ','วิทยาลัยอาชีวศึกษาอุตรดิตถ์','วิทยาลัยการอาชีพนครศรีธรรมราช'];
+/* โควตาสถานศึกษาต่อผลงาน 175 รายการ เกลี่ยให้กระจายทุกปีงบประมาณ */
+var FUND_SEQ = '0124301024013024103201401204301204130201403120410240310241030214012034012043102014032104012304102014302104302104120301420130420140312041020314021034021041023014203104201034210';
+var INST_SEQ = 'ABCDEFGAHBCDAEBFCAIJDBAGKCEBAHDFLCABEMADCBGAFNEBCDAHOBACGFDEABCADBEHFACGBDACEBIAFJDCBAKEGHABCDLFABECADBGCAFHEBDACMBADEFGCABNHADCBEOAFBCGDAEIBACFDHABJCEKAGBDLACFBEADCBHAGFEDCBA';
+var INST_AREA = {
+ 'วิทยาลัยเทคนิคสุราษฎร์ธานี':'จังหวัดสุราษฎร์ธานี','วิทยาลัยเทคนิคนครอุบล':'จังหวัดอุบลราชธานี',
+ 'วิทยาลัยอาชีวศึกษาภูเก็ต':'จังหวัดภูเก็ต','วิทยาลัยเทคนิคเชียงใหม่':'จังหวัดเชียงใหม่',
+ 'วิทยาลัยเกษตรและเทคโนโลยีเพชรบุรี':'จังหวัดเพชรบุรี','วิทยาลัยการอาชีพนวมินทราชูทิศ':'กรุงเทพมหานคร',
+ 'วิทยาลัยสารพัดช่างนครปฐม':'จังหวัดนครปฐม','วิทยาลัยเทคนิคขอนแก่น':'จังหวัดขอนแก่น',
+ 'วิทยาลัยเทคนิคสัตหีบ':'จังหวัดชลบุรี','วิทยาลัยเกษตรและเทคโนโลยีลพบุรี':'จังหวัดลพบุรี',
+ 'วิทยาลัยเทคนิคนครสวรรค์':'จังหวัดนครสวรรค์','วิทยาลัยการอาชีพบ้านไผ่':'จังหวัดขอนแก่น',
+ 'วิทยาลัยการอาชีพหลังสวน':'จังหวัดชุมพร','วิทยาลัยอาชีวศึกษาอุตรดิตถ์':'จังหวัดอุตรดิตถ์',
+ 'วิทยาลัยการอาชีพนครศรีธรรมราช':'จังหวัดนครศรีธรรมราช','วิทยาลัยเทคนิคระยอง':'จังหวัดระยอง',
+ 'วิทยาลัยอาชีวศึกษาเชียงราย':'จังหวัดเชียงราย','วิทยาลัยการอาชีพพนัสนิคม':'จังหวัดชลบุรี'};
+var TOPICS = [
+ ['เครื่องคัดแยกเมล็ดกาแฟด้วยระบบประมวลผลภาพ','ช่างอุตสาหกรรม','อิเล็กทรอนิกส์',['ระบบควบคุมอัตโนมัติ','เกษตรอัจฉริยะ'],'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม'],
+ ['ระบบรดน้ำอัตโนมัติควบคุมผ่านโทรศัพท์มือถือ','เกษตรกรรม','พืชศาสตร์',['อินเทอร์เน็ตของสรรพสิ่ง','เกษตรอัจฉริยะ'],'งานวิจัยเพื่อพัฒนาชุมชน'],
+ ['ชุดฝึกระบบไฟฟ้ารถยนต์ไฟฟ้าดัดแปลง','ช่างอุตสาหกรรม','ไฟฟ้ากำลัง',['ไฟฟ้ากำลัง','ชุดสาธิต'],'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม'],
+ ['บรรจุภัณฑ์ย่อยสลายได้จากเส้นใยมะพร้าว','คหกรรม','คหกรรมศาสตร์',['บรรจุภัณฑ์','วิสาหกิจชุมชน'],'งานวิจัยเพื่อพัฒนาชุมชน'],
+ ['สื่อการสอนความเป็นจริงเสมือนวิชางานเชื่อม','ช่างอุตสาหกรรม','เทคนิคโลหะ',['ความเป็นจริงเสมือน','สื่อการสอน'],'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม'],
+ ['เครื่องอบแห้งพลังงานแสงอาทิตย์สำหรับผลผลิตเกษตร','เกษตรกรรม','เทคโนโลยีการแปรรูปผลผลิตเกษตร',['พลังงานแสงอาทิตย์','เครื่องอบแห้ง'],'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม'],
+ ['ระบบจัดการคลังสินค้าด้วยรหัสคิวอาร์','บริหารธุรกิจ','การจัดการโลจิสติกส์',['ระบบควบคุมอัตโนมัติ'],'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม'],
+ ['ถ่านอัดแท่งจากวัสดุเหลือใช้ทางการเกษตร','เกษตรกรรม','พืชศาสตร์',['ถ่านอัดแท่ง','ชีวมวล'],'งานวิจัยเพื่อพัฒนาชุมชน'],
+ ['แอปพลิเคชันฝึกภาษาอังกฤษเพื่อการโรงแรม','อุตสาหกรรมท่องเที่ยว','การโรงแรม',['สื่อการสอน'],'งานวิจัยในห้องเรียน'],
+ ['ชุดสาธิตเซลล์แสงอาทิตย์แบบเคลื่อนย้ายได้','ช่างอุตสาหกรรม','ไฟฟ้ากำลัง',['เซลล์แสงอาทิตย์','ชุดสาธิต'],'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม'],
+ ['ระบบบัญชีต้นทุนสำหรับวิสาหกิจชุมชน','บริหารธุรกิจ','การบัญชี',['วิสาหกิจชุมชน'],'งานวิจัยเพื่อพัฒนาชุมชน'],
+ ['เครื่องสับย่อยต้นกล้วยสำหรับผสมอาหารสัตว์','เกษตรกรรม','สัตวศาสตร์',['ระบบควบคุมอัตโนมัติ'],'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม'],
+ ['สื่อมัลติมีเดียสอนงานติดตั้งไฟฟ้าภายในอาคาร','ช่างอุตสาหกรรม','ไฟฟ้ากำลัง',['สื่อการสอน','ไฟฟ้ากำลัง'],'งานวิจัยในห้องเรียน'],
+ ['ระบบเฝ้าระวังคุณภาพน้ำในบ่อเลี้ยงปลา','เกษตรกรรม','ประมง',['อินเทอร์เน็ตของสรรพสิ่ง'],'งานวิจัยเพื่อพัฒนาชุมชน'],
+ ['ชุดทดลองวงจรอิเล็กทรอนิกส์พื้นฐานราคาประหยัด','ช่างอุตสาหกรรม','อิเล็กทรอนิกส์',['ชุดสาธิต','สื่อการสอน'],'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม'],
+ ['ผลิตภัณฑ์น้ำพริกใบชะมวงเพื่อการจำหน่ายในชุมชน','คหกรรม','อาหารและโภชนาการ',['การแปรรูปอาหาร','วิสาหกิจชุมชน'],'งานวิจัยเพื่อพัฒนาชุมชน'],
+ ['ระบบจองห้องปฏิบัติการผ่านรหัสคิวอาร์','บริหารธุรกิจ','คอมพิวเตอร์ธุรกิจ',['ระบบควบคุมอัตโนมัติ'],'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม'],
+ ['เครื่องหั่นย่อยวัสดุเพาะเห็ดแบบกึ่งอัตโนมัติ','เกษตรกรรม','พืชศาสตร์',['ระบบควบคุมอัตโนมัติ'],'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม'],
+ ['รูปแบบการจัดการเรียนรู้แบบทวิภาคีกับสถานประกอบการ','บริหารธุรกิจ','การจัดการโลจิสติกส์',['ทวิภาคี','การจัดการเรียนรู้'],'งานวิจัยในห้องเรียน'],
+ ['ชุดควบคุมโรงเรือนอัจฉริยะต้นทุนต่ำ','เกษตรกรรม','พืชศาสตร์',['เกษตรอัจฉริยะ','อินเทอร์เน็ตของสรรพสิ่ง'],'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม'],
+ ['สื่อการสอนออนไลน์วิชาการบัญชีเบื้องต้น','บริหารธุรกิจ','การบัญชี',['สื่อการสอน','การจัดการเรียนรู้'],'งานวิจัยในห้องเรียน'],
+ ['ผลิตภัณฑ์ผ้าทอมือร่วมสมัยเพื่อชุมชน','คหกรรม','ผ้าและเครื่องแต่งกาย',['วิสาหกิจชุมชน'],'งานวิจัยเพื่อพัฒนาชุมชน'],
+ ['เตาชีวมวลประหยัดพลังงานสำหรับครัวเรือน','เกษตรกรรม','พืชศาสตร์',['ชีวมวล'],'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม'],
+ ['ระบบนำชมแหล่งท่องเที่ยวชุมชนด้วยรหัสคิวอาร์','อุตสาหกรรมท่องเที่ยว','การท่องเที่ยว',['วิสาหกิจชุมชน'],'งานวิจัยเพื่อพัฒนาชุมชน'],
+ ['ชุดฝึกปฏิบัติงานเชื่อมอาร์กโลหะแก๊สคลุม','ช่างอุตสาหกรรม','เทคนิคโลหะ',['ชุดสาธิต','งานเชื่อมโลหะ'],'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม'],
+ ['สื่อกราฟิกส่งเสริมการเรียนรู้อาชีพท้องถิ่น','ศิลปกรรม','คอมพิวเตอร์กราฟิก',['สื่อการสอน'],'งานวิจัยในห้องเรียน']
+];
+var VARI = ['การพัฒนา','การออกแบบและสร้าง','การประยุกต์ใช้','การศึกษาและพัฒนา','การสร้างและหาประสิทธิภาพ','ต้นแบบ','การยกระดับ','การวิจัยและพัฒนา','การสร้างและพัฒนา','การออกแบบ','การศึกษาแนวทางพัฒนา','การพัฒนาและหาประสิทธิภาพ'];
+/* ลำดับหัวข้อผลงาน กำหนดไว้ล่วงหน้าเพื่อให้สัดส่วนประเภทวิชาและแนวโน้มคำสำคัญคงที่ทุกครั้งที่เปิดระบบ */
+var TOPIC_SEQ = 'JOYZACEFGHIKLMPQRUVWXJOYZJOYOJMQYZABCDEFGHIKLNPRSTUVWXOJMQYZOACDEJKOQVXYZBFGHILMNPRSTUWACDEJKOQVXYZACDEKXBPSVZFGHIJLMNOQRTUWYACDEKXBPSVZACDEKXGKMACDEPQSXBINTUVZGKMACDEPQSXGKMG';
+var CODE = {'งานวิจัยเพื่อพัฒนาชุมชน':'COM','งานวิจัยในห้องเรียน':'CLS','งานวิจัยสิ่งประดิษฐ์และนวัตกรรม':'INV'};
+var LEADS = ['นายวิชัย ประสงค์ดี','นางสาวกนกวรรณ แสงเพชร','นายธีรพงษ์ อินทร์จันทร์','นางพรทิพย์ วงศ์สุวรรณ',
+ 'นายเอกชัย บุญมาก','นางสาวสุนิสา คำแก้ว','นายชาญณรงค์ พูนทรัพย์','นางสาวรัตติกาล ศรีบุญเรือง'];
+
+function bulk(){
+  var out = [], YEARS = ['2565','2566','2567','2568','2569'],
+      PER = [28,33,38,43,33], n = 0, OCC = {};
+  YEARS.forEach(function(y, yi){
+    for(var i=0; i<PER[yi]; i++){
+      var ti = TOPIC_SEQ.charCodeAt(n) - 65;
+      var t = TOPICS[ti];
+      OCC[ti] = (OCC[ti] || 0) + 1;
+      var v = VARI[(OCC[ti] - 1) % VARI.length];
+      var inst = INST_LIST[INST_SEQ.charCodeAt(n) - 65];
+      var fnd = FUNDS[FUND_SEQ.charCodeAt(n) - 48];
+      var ty = t[4];
+      var used = (n % 3 === 0), ip = (n % 8 === 0);
+      out.push({
+        id:'VEC-'+y+'-'+CODE[ty]+'-'+String(1000+n),
+        title: v + t[0], titleEn:'', type:ty, fund:fnd,
+        year:y, yearDone:y, cat:t[1], major:t[2], inst:inst,
+        lead:LEADS[n % LEADS.length], co:'', level:LEVELS[n % LEVELS.length],
+        target:'ผู้เรียนและครูผู้สอน'+t[1], area:INST_AREA[inst],
+        abstract:'การศึกษาครั้งนี้มีวัตถุประสงค์เพื่อ'+v.replace('การ','')+t[0]+' และหาประสิทธิภาพของผลงานเมื่อนำไปใช้จริงในบริบทของ'+inst+
+          ' ดำเนินการโดยศึกษาสภาพปัญหา ออกแบบและสร้างผลงาน ตรวจสอบคุณภาพโดยผู้เชี่ยวชาญ แล้วนำไปทดลองใช้กับกลุ่มตัวอย่าง '+
+          'ผลการศึกษาพบว่าผลงานมีประสิทธิภาพอยู่ในระดับมาก และผู้ใช้มีความพึงพอใจอยู่ในระดับมากที่สุด',
+        kw:t[3], status:'published', owner:LEADS[n % LEADS.length],
+        files:{full:true,abs:true,img:true},
+        consent:{pub:true,req:true,contact:false,hold:false},
+        util: used ? {orgs:[{n:INST_LIST[(n*7+2) % INST_LIST.length], u:'นำไปใช้ประกอบการเรียนการสอน', y:y}],
+                      people:String(40 + (n%12)*25), ip: ip?'ได้รับอนุสิทธิบัตรแล้ว':'ยังไม่ยื่น',
+                      ipno: ip?String(20000+n):'', awards:(n%9===0)?1:0} : null,
+        hist:[{d:'ปีงบประมาณ '+y, t:'เผยแพร่บนระบบ'}]
+      });
+      n++;
+    }
+  });
+  return out;
+}
+
+var REQUESTS = [
+ {id:'RQ-001', by:'นายสมชาย ใจดี', inst:MY_INST, rec:'VEC-2567-CLS-00188', purpose:'อ้างอิงในงานวิจัยของตนเอง', status:'wait'},
+ {id:'RQ-002', by:'นางสาวพัชริดา แก้วมณี', inst:'วิทยาลัยอาชีวศึกษาเชียงราย', rec:'VEC-2567-COM-00655', purpose:'ต่อยอดพัฒนา', status:'wait'},
+ {id:'RQ-003', by:'นายวีระพงษ์ สุขใจ', inst:'วิทยาลัยเทคนิคนครสวรรค์', rec:'VEC-2568-INV-00417', purpose:'ต่อยอดเป็นสื่อการสอนในรายวิชา', status:'wait'}
+];
+
+function accounts(){ return [
+ {id:'AC-1', name:'นายอนุชา ทองแท้', pos:'ครูผู้ช่วย', email:'anucha.t@lopburicat.ac.th',
+  inst:'วิทยาลัยเกษตรและเทคโนโลยีลพบุรี', check:'ok', status:'wait'},
+ {id:'AC-2', name:'นางสาวจิราพร มีสุข', pos:'ครู คศ.1', email:'jiraporn.m@gmail.com',
+  inst:'วิทยาลัยอาชีวศึกษาภูเก็ต', check:'warn', status:'wait'},
+ {id:'AC-3', name:'นายธนกร แซ่ลิ้ม', pos:'บุคคลภายนอก', email:'thanakorn@innotech.co.th',
+  inst:'— ไม่ได้ระบุ', check:'bad', status:'wait'}
+]; }
+
+function userReqs(){ return [
+ {id:'UR-1', who:'นางสาวจิราพร มีสุข', inst:'วิทยาลัยอาชีวศึกษาภูเก็ต', kind:'ย้ายสังกัด',
+  detail:'ย้ายไปวิทยาลัยเทคนิคสุราษฎร์ธานี ตั้งแต่ 1 ต.ค. 2569', status:'wait'},
+ {id:'UR-2', who:'นายอนุชา ทองเเท้', inst:'วิทยาลัยเกษตรและเทคโนโลยีลพบุรี', kind:'แก้ชื่อสะกดผิด',
+  detail:'สะกดนามสกุลผิดตอนสมัคร ที่ถูกต้องคือ ทองแท้', status:'wait'}
+]; }
+
+/* ============ สถานะแอป ============ */
+var S = {
+  role:'guest', screen:'g.home', recs:seed(), reqs:REQUESTS.slice(), acct:accounts(), ureq:userReqs(),
+  q:'', fType:'', fYear:'', fInst:'', fCat:'', fRegion:'', fSrc:'', bdim:'inst', adv:false, ft:true, vmore:{}, v02:null, v02file:null,
+  cur:null, form:null, step:1, errs:{}, touched:false,
+  checks:{}, feedbackDraft:'', acctReason:'', notes:[], log:[], undo:null
+};
+var KEY = 'vec-proto-v1';
+function save(){ DATA_AT = new Date(); try{ localStorage.setItem(KEY, JSON.stringify(
+  {recs:S.recs, reqs:S.reqs, acct:S.acct, ureq:S.ureq, notes:S.notes, log:S.log})); }catch(e){} }
+function load(){
+  try{ var r = localStorage.getItem(KEY); if(!r) return;
+    var d = JSON.parse(r); if(d && d.recs && d.recs.length){
+      S.recs = d.recs; S.reqs = d.reqs || REQUESTS.slice(); S.acct = d.acct || accounts(); S.ureq = d.ureq || userReqs();
+      S.notes = d.notes || []; S.log = d.log || []; }
+  }catch(e){}
+}
+function resetAll(){ try{ localStorage.removeItem(KEY); }catch(e){}
+  S.recs = seed(); S.reqs = REQUESTS.slice(); S.acct = accounts(); S.ureq = userReqs(); S.notes = []; S.log = [];
+  S.role='guest'; S.screen='g.home'; S.form=null; S.errs={}; S.cur=null; S.q=''; S.fType=''; S.fYear='';
+  S.fInst=''; S.fCat=''; S.fRegion=''; S.bdim='inst'; S.checks={}; S.feedbackDraft=''; S.acctReason='';
+  render(); toast('คืนค่าเริ่มต้นเรียบร้อย ข้อมูลทดลองทั้งหมดกลับไปเป็นชุดตั้งต้น','g'); }
+function notify(msg, recId, kind){
+  S.notes.unshift({t:nowStr(), msg:msg, rec:recId||'', kind:kind||'i', read:false});
+  if(S.notes.length>12) S.notes.pop();
+}
+function unread(){ return S.notes.filter(function(n){ return !n.read; }).length; }
+
+/* นับจำนวนตามมิติ แล้วเรียงจากมากไปน้อย */
+function countBy(list, keyFn){
+  var m = {}; list.forEach(function(x){ var k = keyFn(x); if(!k) return; m[k] = (m[k]||0)+1; });
+  return Object.keys(m).map(function(k){ return {k:k, v:m[k]}; }).sort(function(a,b){ return b.v-a.v; });
+}
+/* แผนภูมิแท่งแนวนอน ชุดข้อมูลเดียว ใช้สีเดียวเพราะสื่อ “ปริมาณ” ไม่ใช่ “ตัวตน” */
+function barBlock(title, rows, unit, act){
+  if(!rows.length) return '<div class="card"><h3>'+h(title)+'</h3><p style="font-size:13px;color:var(--ink-3)">ยังไม่มีข้อมูล</p></div>';
+  var max = Math.max(1, Math.max.apply(null, rows.map(function(r){ return r.v; })));
+  return '<div class="card"><h3>'+h(title)+'</h3><div class="bars">'+
+    rows.map(function(r){
+      var pct = Math.max(2, Math.round(r.v/max*100));
+      var lbl = h(r.k)+' — '+r.v+' '+(unit||'รายการ');
+      var inner = '<span class="bl" title="'+lbl+'">'+h(r.k)+'</span>'+
+        '<div class="tr" title="'+lbl+'"><div class="fl" style="width:'+pct+'%"></div></div>'+
+        '<span class="n">'+r.v+'</span>';
+      return act ? '<button class="bar bar-a" type="button" data-act="'+act+'" data-a="'+h(r.k)+'">'+inner+'</button>'
+                 : '<div class="bar">'+inner+'</div>';
+    }).join('')+'</div></div>';
+}
+/* คำสำคัญที่พบบ่อยและทิศทาง เทียบสัดส่วนการปรากฏของคำสำคัญระหว่างช่วงปีต้นกับช่วงปีหลัง
+   หารด้วยจำนวนผลงานของแต่ละช่วงก่อนเปรียบเทียบ เพราะแต่ละช่วงมีจำนวนผลงานไม่เท่ากัน */
+var KW_EARLY = ['2565','2566','2567'], KW_LATE = ['2568','2569'];
+function kwTrend(title, top){
+  var pub = by('published');
+  var ea = pub.filter(function(r){ return KW_EARLY.indexOf(r.year)>=0; });
+  var la = pub.filter(function(r){ return KW_LATE.indexOf(r.year)>=0; });
+  function tally(a){ var m={}; a.forEach(function(r){ (r.kw||[]).forEach(function(k){ m[k]=(m[k]||0)+1; }); }); return m; }
+  var A = tally(pub), E = tally(ea), L = tally(la);
+  var rows = Object.keys(A).map(function(k){
+    var e = ea.length ? (E[k]||0)/ea.length : 0, l = la.length ? (L[k]||0)/la.length : 0;
+    var dir = 'flat';
+    if(e === 0) dir = l > 0 ? 'up' : 'flat';
+    else if(l/e >= 1.25) dir = 'up';
+    else if(l/e <= 0.80) dir = 'down';
+    return {k:k, v:A[k], e:E[k]||0, l:L[k]||0, dir:dir};
+  }).sort(function(a,b){ return b.v - a.v; }).slice(0, top || 10);
+  if(!rows.length) return '<div class="card"><h3>'+h(title)+'</h3><p style="font-size:13px;color:var(--ink-3)">ยังไม่มีข้อมูล</p></div>';
+  var max = Math.max.apply(null, rows.map(function(r){ return r.v; }));
+  var LB = {up:'▲ มาแรง', flat:'● คงที่', down:'▼ ลดลง'};
+  var up = rows.filter(function(r){ return r.dir==='up'; }).map(function(r){ return r.k; });
+  return '<div class="card"><h3>'+h(title)+'</h3>'+
+    '<p style="font-size:12.5px;color:var(--ink-2);margin-bottom:10px">'+
+      'นับจากคำสำคัญในบัญชีคำศัพท์ควบคุมที่ลงไว้กับผลงานที่เผยแพร่แล้ว '+
+      'ทิศทางคำนวณจากสัดส่วนการปรากฏในปีงบประมาณ '+KW_LATE[0]+'–'+KW_LATE[KW_LATE.length-1]+
+      ' เทียบกับปี '+KW_EARLY[0]+'–'+KW_EARLY[KW_EARLY.length-1]+
+      ' โดยหารด้วยจำนวนผลงานของแต่ละช่วงก่อน เพื่อไม่ให้ปีที่มีผลงานมากได้เปรียบ</p>'+
+    '<div class="kwlist">'+
+    rows.map(function(r){
+      var pct = Math.max(2, Math.round(r.v/max*100));
+      var ttl = h(r.k)+' — '+r.v+' เรื่อง (ปี '+KW_EARLY[0]+'–'+KW_EARLY[KW_EARLY.length-1]+' '+r.e+
+                ' เรื่อง · ปี '+KW_LATE[0]+'–'+KW_LATE[KW_LATE.length-1]+' '+r.l+' เรื่อง)';
+      return '<button class="kwrow" type="button" data-act="kwq" data-a="'+h(r.k)+'" title="'+ttl+'">'+
+        '<span class="kw-n">'+h(r.k)+'</span>'+
+        '<div class="tr"><div class="fl" style="width:'+pct+'%"></div></div>'+
+        '<span class="kw-c">'+r.v+'</span>'+
+        '<span class="kw-t '+r.dir+'">'+LB[r.dir]+'</span></button>';
+    }).join('')+'</div>'+
+    (up.length ? '<p style="font-size:12.5px;color:var(--ink-2);margin-top:10px">'+
+      '<b>อ่านแนวโน้ม:</b> คำสำคัญที่สัดส่วนเพิ่มขึ้นในสองปีงบประมาณล่าสุดคือ '+h(up.join(' · '))+
+      ' ใช้เป็นข้อมูลประกอบการกำหนดทิศทางและกรอบการให้ทุนวิจัยในปีถัดไปได้</p>' : '')+
+    '<p style="font-size:12px;color:var(--ink-3);margin-top:8px">กดที่คำสำคัญเพื่อดูผลงานทั้งหมดที่ใช้คำนั้น</p></div>';
+}
+
+/* แผนภูมิวงแหวน สำหรับสัดส่วนส่วนย่อยต่อทั้งหมด ไม่เกิน 4 ส่วน
+   ใช้สีชุดหมวดหมู่ที่ผ่านการตรวจค่าความต่างแล้ว และกำกับชื่อกับตัวเลขทุกส่วนเสมอ */
+function donut(title, rows, note){
+  var total = rows.reduce(function(a,r){ return a+r.v; }, 0) || 1;
+  var R = 68, SW = 26, C = 2*Math.PI*R, GAP = 3, acc = 0;
+  var segs = rows.map(function(r, i){
+    var len = Math.max(0, r.v/total*C - GAP);
+    var s = '<circle cx="100" cy="100" r="'+R+'" fill="none" stroke="var(--c'+((i%4)+1)+')" stroke-width="'+SW+'"'+
+      ' stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" stroke-dashoffset="'+(-acc).toFixed(2)+'">'+
+      '<title>'+h(r.k)+' — '+r.v+' รายการ ('+Math.round(r.v/total*100)+'%)</title></circle>';
+    acc += r.v/total*C;
+    return s;
+  }).join('');
+  /* ปัดเปอร์เซ็นต์แบบเศษเหลือมากสุด เพื่อให้ผลรวมเท่ากับ 100 พอดี */
+  var raw = rows.map(function(r){ return r.v/total*100; });
+  var pcts = raw.map(function(x){ return Math.floor(x); });
+  var short = 100 - pcts.reduce(function(a,b){ return a+b; }, 0);
+  raw.map(function(x,i){ return {i:i, f:x-Math.floor(x)}; })
+     .sort(function(a,b){ return b.f-a.f; })
+     .slice(0, Math.max(0,short))
+     .forEach(function(o){ pcts[o.i]++; });
+  var legend = rows.map(function(r, i){
+    return '<div class="lg-row"><span class="dsw" style="background:var(--c'+((i%4)+1)+')"></span>'+
+      '<span class="lg-n">'+h(r.k)+'</span>'+
+      '<span class="lg-v num">'+r.v+'</span>'+
+      '<span class="lg-p num">'+pcts[i]+'%</span></div>';
+  }).join('');
+  return '<div class="card"><h3>'+h(title)+'</h3>'+
+    '<div class="donut-wrap"><svg viewBox="0 0 200 200" class="donut" role="img" aria-label="'+h(title)+'">'+
+      '<g transform="rotate(-90 100 100)">'+segs+'</g>'+
+      '<text x="100" y="95" class="dn-total">'+total+'</text>'+
+      '<text x="100" y="116" class="dn-lab">รายการ</text></svg>'+
+      '<div class="lg-list">'+legend+'</div></div>'+
+    (note?'<p class="chart-note">'+h(note)+'</p>':'')+'</div>';
+}
+
+/* แผนภูมิเส้นพร้อมพื้นที่ใต้เส้น สำหรับแนวโน้มตามช่วงเวลา */
+function trendChart(title, pts, note){
+  if(!pts.length) return '';
+  var W = 560, H = 190, PL = 42, PR = 14, PT = 16, PB = 30;
+  var max = Math.max.apply(null, pts.map(function(p){ return p.v; })), top = Math.max(4, Math.ceil(max*1.15));
+  var iw = W-PL-PR, ih = H-PT-PB;
+  var X = function(i){ return PL + (pts.length===1 ? iw/2 : i*iw/(pts.length-1)); };
+  var Y = function(v){ return PT + ih - (v/top)*ih; };
+  var ticks = [0, Math.round(top/2), top];
+  var grid = ticks.map(function(t){
+    return '<line x1="'+PL+'" y1="'+Y(t).toFixed(1)+'" x2="'+(W-PR)+'" y2="'+Y(t).toFixed(1)+'" class="gl"/>'+
+      '<text x="'+(PL-8)+'" y="'+(Y(t)+4).toFixed(1)+'" class="ax ax-r">'+t+'</text>'; }).join('');
+  var line = pts.map(function(p,i){ return X(i).toFixed(1)+','+Y(p.v).toFixed(1); }).join(' ');
+  var area = PL+','+Y(0).toFixed(1)+' '+line+' '+(X(pts.length-1)).toFixed(1)+','+Y(0).toFixed(1);
+  var peak = pts.reduce(function(a,b){ return b.v>a.v?b:a; }, pts[0]);
+  var dots = pts.map(function(p,i){
+    var big = (p===peak || i===pts.length-1);
+    return '<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="'+(big?5:4)+'" class="dot'+(big?' dot-em':'')+'">'+
+      '<title>'+h(p.k)+' — '+p.v+' รายการ</title></circle>'+
+      (big?'<text x="'+X(i).toFixed(1)+'" y="'+(Y(p.v)-12).toFixed(1)+'" class="dl">'+p.v+'</text>':'');
+  }).join('');
+  var xlab = pts.map(function(p,i){
+    return '<text x="'+X(i).toFixed(1)+'" y="'+(H-9)+'" class="ax">'+h(p.k)+'</text>'; }).join('');
+  return '<div class="card"><h3>'+h(title)+'</h3>'+
+    '<div class="svg-wrap"><svg viewBox="0 0 '+W+' '+H+'" class="trend" role="img" aria-label="'+h(title)+'">'+
+      grid + '<polygon points="'+area+'" class="ar"/><polyline points="'+line+'" class="ln"/>'+ dots + xlab +
+    '</svg></div>'+ (note?'<p class="chart-note">'+h(note)+'</p>':'') +'</div>';
+}
+
+function rec(id){ for(var i=0;i<S.recs.length;i++){ if(S.recs[i].id===id) return S.recs[i]; } return null; }
+function by(st){ return S.recs.filter(function(r){ return r.status===st; }); }
+function mine(){ return S.recs.filter(function(r){ return r.owner===ME; }); }
+function logit(who,act,ref){ S.log.unshift({t:nowStr(), who:who, act:act, ref:ref||'—'}); if(S.log.length>40) S.log.pop(); }
+function nowStr(){ var d=new Date(); var p=function(n){return n<10?'0'+n:''+n;};
+  return d.getDate()+'/'+(d.getMonth()+1)+' '+p(d.getHours())+':'+p(d.getMinutes()); }
+
+/* ============ toast / modal ============ */
+var toastN = 0;
+function toast(msg, kind, undoLabel, undoFn){
+  var box = $('toasts'); var id = 'tst'+(++toastN);
+  var d = document.createElement('div');
+  d.className = 'toast' + (kind ? ' '+kind : ''); d.id = id;
+  d.innerHTML = '<span>'+h(msg)+'</span>' + (undoLabel ? '<button type="button" data-undo="'+id+'">'+h(undoLabel)+'</button>' : '');
+  box.appendChild(d);
+  while(box.children.length > 3){ box.removeChild(box.firstChild); }
+  if(undoFn){ d.querySelector('[data-undo]').addEventListener('click', function(){ undoFn(); d.remove(); }); }
+  setTimeout(function(){ var n=$(id); if(n) n.remove(); }, undoFn ? 9000 : 4200);
+}
+function modal(title, body, okLabel, okFn, cancelLabel){
+  var m = document.createElement('div'); m.id='modal';
+  m.innerHTML = '<div class="box" role="dialog" aria-modal="true"><h3>'+h(title)+'</h3><p>'+body+'</p>'+
+    '<div class="btnrow" style="justify-content:flex-end"><button class="btn" id="mdNo" type="button">'+h(cancelLabel||'ยกเลิก')+'</button>'+
+    '<button class="btn pri" id="mdYes" type="button">'+h(okLabel)+'</button></div></div>';
+  document.body.appendChild(m);
+  var close = function(){ m.remove(); };
+  $('mdNo').addEventListener('click', close);
+  $('mdYes').addEventListener('click', function(){ close(); okFn(); });
+  m.addEventListener('click', function(e){ if(e.target===m) close(); });
+  document.addEventListener('keydown', function esc(e){ if(e.key==='Escape'){ close(); document.removeEventListener('keydown', esc); } });
+  setTimeout(function(){ var y=$('mdYes'); if(y) y.focus(); },30);
+}
+
+/* ============ ชิ้นส่วน UI ============ */
+function pill(st){ return '<span class="pill st-'+st+'">'+ST_LABEL[st]+'</span>'; }
+function tile(k,v,cls){ return '<div class="tile '+(cls||'')+'"><div class="k">'+h(k)+'</div><div class="v num">'+h(v)+'</div></div>'; }
+function crumbs(list){
+  var out=[]; for(var i=0;i<list.length;i++){ var it=list[i];
+    out.push(it.go ? '<button type="button" data-act="go" data-a="'+it.go+'">'+h(it.t)+'</button>' : '<span>'+h(it.t)+'</span>');
+    if(i<list.length-1) out.push('<span>›</span>'); }
+  return '<div class="crumbs">'+out.join('')+'</div>';
+}
+function backBtn(to, label){ return '<button class="btn" type="button" data-act="go" data-a="'+to+'">← '+h(label||'ย้อนกลับ')+'</button>'; }
+function fld(o){
+  var bad = S.errs[o.name];
+  var common = 'id="f_'+o.name+'" data-f="'+o.name+'" '+(o.ro?'readonly ':'')+(o.ro?'class="ro" ':'');
+  var inner;
+  if(o.type==='select'){
+    var opts = '<option value="">— เลือก —</option>';
+    (o.opts||[]).forEach(function(v){ opts += '<option value="'+h(v)+'"'+(o.value===v?' selected':'')+'>'+h(v)+'</option>'; });
+    inner = '<select '+common+(o.ro?' disabled':'')+'>'+opts+'</select>';
+  } else if(o.type==='textarea'){
+    inner = '<textarea '+common+' placeholder="'+h(o.ph||'')+'">'+h(o.value||'')+'</textarea>';
+  } else {
+    inner = '<input '+common+' type="text" value="'+h(o.value||'')+'" placeholder="'+h(o.ph||'')+'">';
+  }
+  return '<div class="field'+(bad?' bad':'')+'">'+
+    '<label for="f_'+o.name+'">'+h(o.label)+(o.req?' <span class="req">*</span>':'')+'</label>'+ inner +
+    (o.counter!=null ? '<div class="cnt'+(o.counter<250?' bad':'')+'" id="c_'+o.name+'">'+o.counter+' / 250 ตัวอักษรขั้นต่ำ</div>' : '') +
+    (bad ? '<div class="err" role="alert">'+h(bad)+'</div>' : (o.hint ? '<div class="hint">'+h(o.hint)+'</div>' : ''))+
+    '</div>';
+}
+function errSummary(){
+  var ks = Object.keys(S.errs); if(!ks.length) return '';
+  var li = ks.map(function(k){ return '<li>'+h(S.errs[k])+'</li>'; }).join('');
+  return '<div class="alert b" role="alert" id="errsum" tabindex="-1"><b>ยังส่งไม่ได้ พบ '+ks.length+' จุดที่ต้องแก้</b><ul>'+li+'</ul></div>';
+}
+
+/* ============ เมนูแต่ละบทบาท ============ */
+var NAV = {
+ guest:[{s:'g.home',t:'หน้าแรก'},{s:'g.search',t:'สืบค้นผลงาน'},
+        {s:'g.about',t:'เกี่ยวกับระบบ'},{s:'g.help',t:'คู่มือการใช้งาน'},
+        {s:'g.register',t:'สมัครสมาชิก'},{s:'g.login',t:'เข้าสู่ระบบ'}],
+ res:[{s:'g.home',t:'หน้าแรก'},{s:'r.home',t:'ภาพรวมและการติดตามสถานะผลงาน',c:function(){return unread()+mine().filter(function(x){return x.status==='fix';}).length;}},{s:'r.submit',t:'ส่งผลงานใหม่'},{s:'r.portfolio',t:'คลังผลงานของฉัน'},
+      {s:'g.search',t:'สืบค้นผลงาน'},
+      {s:'r.profile',t:'ข้อมูลส่วนตัว'}],
+ adm:[{s:'g.home',t:'หน้าแรก'},{s:'a.home',t:'กระดานภาพรวมการดำเนินงาน'},{s:'a.queue',t:'รายการรอตรวจสอบ',c:function(){return by('wait').length+by('fix').length;}},
+      {s:'a.publishq',t:'รายการรอเผยแพร่',c:function(){return by('approved').length;}},
+      {s:'a.requests',t:'คำขอเอกสาร',c:function(){return S.reqs.filter(function(r){return r.status==='wait';}).length;}},
+      {s:'a.accounts',t:'บัญชีและคำขอผู้ใช้',c:function(){
+         return S.acct.filter(function(a){return a.status==='wait';}).length +
+                S.ureq.filter(function(u){return u.status==='wait';}).length;}},
+      {s:'g.search',t:'สืบค้นผลงาน'},
+      {s:'a.reports',t:'สถิติและรายงาน'}],
+ sup:[{s:'g.home',t:'หน้าแรก'},{s:'s.users',t:'ผู้ใช้และสิทธิ์'},
+      {s:'s.approvals',t:'บัญชีและคำขอผู้ใช้',c:function(){
+         return S.acct.filter(function(a){return a.status==='wait';}).length +
+                S.ureq.filter(function(u){return u.status==='wait';}).length;}},
+      {s:'s.master',t:'ข้อมูลหลักของระบบ'},{s:'s.settings',t:'ตั้งค่าและสำรองข้อมูล'},{s:'s.log',t:'บันทึกการใช้งาน'},
+      {s:'g.search',t:'สืบค้นผลงาน'}]
+};
+/* ตราสัญลักษณ์ สอศ. ฝังเป็น data URI เพื่อให้ไฟล์เดียวจบ ไม่ต้องพึ่งไฟล์ภายนอก */
+var LOGO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAB4CAMAAAAOusbgAAABgFBMVEUAAACBFhvX5eZ4CRV7Exm5dzSwZzCmVyvo9fYKAwOTNyTDiDjLljzM19icRSaJJB4tBQaCCQ+st7jWqEHc8vKLKyNNCAu5xcYlJyiOl5dRV1cyNjagTShveHjcs0Tg7u+apKRESUnFyssVFxfoxkmoq6x6hIRkamrhu0aKGiDS3uABAwO+gDYAAgITCgtcYmMDBQVXEBSEi4zRoT49Q0OndXgYDA2iaW2USU2ZVFiuh4oJBwccIyMoEhPDt7kzFReeYWS2mJrv00yPPkKdXmJFGhqqfoGzvsBNIiInDhRpKSmVn6AdERGQOTn///9/OTl0f4DArrBaX2C5nqD/VVWwJ07MM2b/f38iHx83FiE7P0A/QD9gX16RJEjMZmb/P3//VaoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABM8AHNAAAAgHRSTlMA/v///v/////6/////////v3//////v//////////////////////////rv/STv+P/v////84/////23/Kv8b//////8S//8SKQz/MAgBCf////8DBgUE/xf///8HBQQDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJHbQ1IAABqcSURBVHjavVuHYtvGsjWwwGLRKUAgemMXRZk2JduSLXcnTr03uf319/9f8c7sgpTlOI6d8nCL1YjBtDNnZgd37nzu9dXDu/dOT8/ObHWdnZ7eu/vwqzt/6PXP757ckwJHo9F4fJ+uMb6U8u89+e5//xipX9wloaPxfcPQjm5dmmHgAUj43S9+b6nf3z0loYYhBSWvr948evAY15cPXly9TuSDGAYJP737ze8o9il0Hd0nRTXnxeP5xNf148Ol6/5k/viNQ7817kP2vYe/k1hSdgypLHnzcqKTJHVB/Hr/NX46efkiIdljUvv3ETu6T1IfzX0p9CCs1W+utRTu//goYZA9ss9+q+iHEAtltcu/+gdNhdLWj+i/rT/BAwixF+7PrzQp+vS3GPz5PSn25BEsfFAunUd+sVymu3KeZiIvt4WvR9Hh17D5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';
+var ROLE_NAME = {guest:'บุคคลทั่วไป', res:'นักวิจัย', adm:'เจ้าหน้าที่ สอศ.', sup:'ผู้ดูแลระบบ'};
+var ROLE_HOME = {guest:'g.home', res:'r.home', adm:'a.home', sup:'s.users'};
+var WHO = {guest:'ผู้เยี่ยมชม', res:ME, adm:'อรสิริ (เจ้าหน้าที่ สอศ.)', sup:'ผู้ดูแลระบบ'};
+
+/* ============ หน้าจอ ============ */
+var SC = {};
+
+/* ---- บุคคลทั่วไป ---- */
+/* กระดานภาพรวมการส่งผลงาน รวมการไล่เรียงจากหน้าแยกเดิมมาไว้ในหน้าแรก
+   แสดงเฉพาะมิติที่ยังไม่มีแผนภูมิของตัวเองในหน้านี้ คือสถานศึกษาและภาค */
+function submitBoard(){
+  var pub = by('published');
+  var dim = (S.bdim==='region') ? 'region' : 'inst';
+  var conf = {
+    inst:{t:'ตามสถานศึกษา', f:function(r){return r.inst;}, act:'binst', col:'สถานศึกษา'},
+    region:{t:'ตามภาค', f:regionOf, act:'bregion', col:'ภาค'}
+  };
+  var c = conf[dim];
+  var rows = countBy(pub, c.f);
+  var max = rows.length ? rows[0].v : 1;
+  return '<div class="card"><h3>ภาพรวมการส่งผลงาน</h3>'+
+   '<p style="font-size:12.5px;color:var(--ink-2);margin-bottom:10px">'+
+   'สำหรับกรณีที่ยังไม่รู้ว่าจะค้นด้วยคำใด ให้ไล่ดูจากสถานศึกษาหรือภาคที่สนใจแทน กดที่แถบใดก็ได้เพื่อดูผลงานของหน่วยงานนั้น</p>'+
+   '<div class="chips" style="margin-bottom:10px">'+
+     Object.keys(conf).map(function(k){
+       return '<button class="chip" type="button" data-act="bdim" data-a="'+k+'" aria-pressed="'+(dim===k)+'">'+h(conf[k].t)+'</button>'; }).join('')+
+   '</div>'+
+   (rows.length ? '<div class="bars">'+rows.map(function(x){
+      var pct = Math.max(2, Math.round(x.v/max*100));
+      var lbl = h(x.k)+' — '+x.v+' รายการ';
+      return '<button class="bar bar-a" type="button" data-act="'+c.act+'" data-a="'+h(x.k)+'">'+
+        '<span class="bl" title="'+lbl+'">'+h(x.k)+'</span>'+
+        '<div class="tr" title="'+lbl+'"><div class="fl" style="width:'+pct+'%"></div></div>'+
+        '<span class="n">'+x.v+'</span></button>';
+    }).join('')+'</div>' : '<p style="font-size:13px;color:var(--ink-3)">ยังไม่มีผลงานที่เผยแพร่</p>')+
+   '<p style="font-size:12px;color:var(--ink-3);margin-top:10px">'+
+   'ต้องการเงื่อนไขละเอียดกว่านี้ เช่น สถานศึกษาร่วมกับปีงบประมาณและประเภทวิชา ใช้การสืบค้นขั้นสูงในหน้าสืบค้นผลงาน</p></div>';
+}
+
+/* เวลาที่ข้อมูลถูกดึงมาแสดงล่าสุด ตั้งเมื่อเปิดหน้าเว็บ และปรับใหม่ทุกครั้งที่ข้อมูลในระบบเปลี่ยน */
+var TH_MON = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+var DATA_AT = new Date();
+var TH_MON_FULL = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+  'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+/* เดือนล่าสุดที่ปิดรอบแล้ว ใช้กำกับสถิติการเข้าชมรายเดือน */
+function lastMonthLabel(){
+  var d = new Date(DATA_AT.getFullYear(), DATA_AT.getMonth()-1, 1);
+  return 'เดือน'+TH_MON_FULL[d.getMonth()]+' '+(d.getFullYear()+543);
+}
+function dataStamp(){
+  var d = DATA_AT, p2 = function(n){ return (n<10?'0':'')+n; };
+  return d.getDate()+' '+TH_MON[d.getMonth()]+' '+(d.getFullYear()+543)+
+         ' เวลา '+p2(d.getHours())+'.'+p2(d.getMinutes())+' น.';
+}
+
+/* 5 อันดับผลงานที่ถูกเปิดดูมากที่สุดในรอบ 30 วัน
+   ยอดเข้าชมเป็นข้อมูลจำลอง และจะเพิ่มขึ้นจริงเมื่อมีการกดดูรายละเอียดในต้นแบบ */
+function topViewed(n){
+  var rows = by('published').slice().sort(function(a,b){
+    var d = viewsOf(b) - viewsOf(a); return d !== 0 ? d : a.id.localeCompare(b.id);
+  }).slice(0, n||5);
+  if(!rows.length) return '';
+  return '<div class="card"><h3>ผลงานที่ถูกเปิดดูมากที่สุด 5 อันดับ ประจำ'+h(lastMonthLabel())+'</h3>'+
+   '<p style="font-size:12.5px;color:var(--ink-2);margin-bottom:8px">'+
+   'นับจากจำนวนครั้งที่ผู้ใช้เปิดดูรายละเอียดตลอด'+h(lastMonthLabel())+' '+
+   'ใช้เป็นข้อมูลประกอบการพิจารณาว่าหัวข้อใดกำลังเป็นที่สนใจ และควรขยายผลหรือจัดเวทีแลกเปลี่ยนเรียนรู้</p>'+
+   '<div class="toplist">'+ rows.map(function(r,i){
+     return '<button class="toprow" type="button" data-act="open" data-a="'+r.id+'">'+
+       '<span class="rk" aria-hidden="true">'+(i+1)+'</span>'+
+       '<span><span class="tt">'+h(r.title)+'</span>'+
+       '<span class="ms">'+h(r.inst)+' · ปีงบประมาณ '+h(r.year)+' · '+h(r.type)+'</span></span>'+
+       '<span class="vn">'+viewsOf(r)+' ครั้ง</span></button>';
+   }).join('')+'</div>'+
+   '<p style="font-size:12px;color:var(--ink-3);margin-top:9px">ยอดเปิดดูในต้นแบบเป็นข้อมูลจำลอง '+
+   'แต่จะเพิ่มขึ้นจริงทุกครั้งที่กดดูรายละเอียดผลงาน ลองกดดูแล้วกลับมาดูตัวเลขอีกครั้ง</p></div>';
+}
+
+SC['g.home'] = function(){
+  var pub = by('published');
+  var insts = countBy(pub, function(r){ return r.inst; });
+  var used = pub.filter(function(r){ return r.util && r.util.orgs && r.util.orgs.length; }).length;
+  var ip = pub.filter(function(r){ return r.util && r.util.ip && r.util.ip.indexOf('ได้รับ')===0; }).length;
+  var latest = pub.slice().sort(function(a,b){ return (b.year||'').localeCompare(a.year||''); }).slice(0,3);
+
+  return '<div class="hero"><h2 class="sysname"><span class="w">ต้นแบบ</span><wbr><span class="w">ระบบ</span><wbr><span class="w">สารสนเทศ</span><wbr><span class="w">งานวิจัย</span><wbr><span class="w">และ</span><wbr><span class="w">นวัตกรรม</span><wbr><span class="w">อาชีวศึกษา</span></h2>'+
+    '<p class="sub">รวมผลงานวิจัยเพื่อพัฒนาชุมชน งานวิจัยในห้องเรียน และงานวิจัยสิ่งประดิษฐ์และนวัตกรรม ที่ได้รับทุนและดำเนินการเสร็จสิ้นแล้ว ไว้ในที่เดียว '+
+      (S.role==='guest' ? 'ค้นหาได้โดยไม่ต้องสมัครสมาชิก' : 'หน้านี้เป็นภาพรวมของคลังที่ทุกสิทธิ์ผู้ใช้เข้าดูได้')+'</p>'+
+    '<div class="field" style="margin:14px 0 8px"><label for="f_q" class="sr">ค้นหาผลงาน</label>'+
+      '<input id="f_q" data-f="q" type="text" value="'+h(S.q)+'" placeholder="พิมพ์ชื่อผลงาน คำสำคัญ ชื่อผู้วิจัย หรือชื่อสถานศึกษา"></div>'+
+      '<div class="btnrow"><button class="btn pri" type="button" data-act="search">ค้นหา</button>'+
+      '<button class="btn" type="button" data-act="advopen">สืบค้นขั้นสูง</button>'+
+      
+      '<button class="btn ghost" type="button" data-act="go" data-a="g.search">ดูผลงานทั้งหมด</button></div></div>'+
+
+
+    '<h3 style="font-size:17px;margin:20px 0 4px">ภาพรวมสารสนเทศงานวิจัยและนวัตกรรมอาชีวศึกษา</h3>'+
+    '<p style="font-size:12px;color:var(--ink-3);margin:0 0 10px" class="num">ข้อมูลอัปเดตล่าสุดเมื่อ '+h(dataStamp())+'</p>'+
+    '<div class="tiles">'+
+      tile('ผลงานเผยแพร่แล้ว', pub.length)+
+      tile('สถานศึกษาที่ร่วมส่ง', insts.length,'i')+
+      tile('นำไปใช้ประโยชน์จริง', used,'g')+
+      tile('ได้รับการคุ้มครองสิทธิบัตร/อนุสิทธิบัตร', ip,'w')+'</div>'+
+    '<p style="font-size:12px;color:var(--ink-3);margin:-6px 0 14px">ตัวเลขคำนวณจากข้อมูลจริงในต้นแบบขณะนี้ · เมื่อเจ้าหน้าที่เผยแพร่ผลงานเพิ่ม ตัวเลขทุกช่องจะเปลี่ยนตามทันที</p>'+
+
+    '<div class="grid2">'+
+      donut('สัดส่วนผลงานแยกตามประเภท', countBy(pub,function(r){return r.type;}),
+            'กำกับชื่อและจำนวนไว้ทุกส่วน จึงอ่านได้แม้ผู้ใช้แยกสีไม่ได้')+
+      trendChart('แนวโน้มจำนวนผลงานที่เผยแพร่ รายปีงบประมาณ',
+            countBy(pub,function(r){return r.year;}).sort(function(a,b){return a.k.localeCompare(b.k);}),
+            'จุดที่เน้นคือปีที่มีผลงานสูงสุดและปีล่าสุด · เลื่อนเมาส์ชี้จุดเพื่อดูตัวเลขรายปี')+
+    '</div>'+
+    '<div class="grid2">'+
+      donut('สัดส่วนผลงานแยกตามแหล่งทุนวิจัย', countBy(pub, srcOf),
+            'งบประมาณภายใน สอศ. เป็นแหล่งทุนหลัก โดยมีงบประมาณภายนอกจากสองหน่วยงานสนับสนุนเพิ่มเติม')+
+      barBlock('ผลงานแยกตามประเภททุนที่ได้รับ', countBy(pub,function(r){return r.fund;}), 'รายการ')+
+    '</div>'+
+    '<div class="grid2">'+
+      barBlock('ผลงานแยกตามประเภทวิชา', countBy(pub,function(r){return r.cat;}), 'รายการ', 'bcat')+
+      submitBoard()+
+    '</div>'+
+    '<p style="font-size:12px;color:var(--ink-3);margin:-4px 0 16px">กดที่แถบใดก็ได้เพื่อกรองผลการค้นหาด้วยเงื่อนไขนั้นทันที</p>'+
+
+    kwTrend('คำสำคัญที่พบบ่อยและทิศทางการวิจัย', 10)+
+
+    topViewed(5)+
+
+    '<div class="card"><h3>ผลงานที่เผยแพร่ล่าสุด</h3>'+
+      latest.map(function(r){
+        return '<div style="padding:9px 0;border-bottom:1px solid var(--line)">'+
+          '<div style="font-size:14px;font-weight:600;color:var(--ink)">'+h(r.title)+'</div>'+
+          '<div style="font-size:12px;color:var(--ink-3);margin-top:2px">'+h(r.inst)+' · ปีงบประมาณ '+h(r.year)+' · '+h(r.type)+'</div>'+
+          '<div style="margin-top:6px"><button class="btn sm" type="button" data-act="open" data-a="'+r.id+'">ดูรายละเอียด</button></div></div>';
+      }).join('')+'</div>';
+};
+
+SC['g.about'] = function(){
+  return crumbs([{t:'หน้าแรก',go:'g.home'},{t:'เกี่ยวกับระบบ'}])+
+   '<div class="pagehead"><div><h2>เกี่ยวกับระบบ</h2>'+
+   '<p class="ph-sub">ขอบเขต สิทธิ์ผู้ใช้ และมาตรฐานเมทาดาทาที่ระบบใช้</p></div>'+backBtn('g.home','กลับหน้าแรก')+'</div>'+
+   '<div class="card"><h3>แหล่งทุนวิจัย</h3><dl class="kv">'+kv(SRC_IN,'งบประมาณของสำนักงานคณะกรรมการการอาชีวศึกษา')+kv(SRC_NRCT,'งบประมาณภายนอกจากสำนักงานการวิจัยแห่งชาติ')+kv(SRC_TSRI,'งบประมาณภายนอกจากสำนักงานคณะกรรมการส่งเสริมวิทยาศาสตร์ วิจัยและนวัตกรรม')+'</dl><p style="font-size:12.5px;color:var(--ink-3);margin-top:8px">ระบบอนุมานแหล่งทุนวิจัยจากประเภททุนที่ผู้ส่งผลงานเลือก จึงไม่ต้องกรอกซ้ำ</p></div>'+'<div class="card"><h3>ขอบเขตของระบบ</h3>'+
+    '<p style="font-size:14px;color:var(--ink-2)">ระบบจัดเก็บเฉพาะผลงานวิจัยและนวัตกรรมที่ได้รับทุนและดำเนินการเสร็จสิ้นแล้ว เพื่อการเผยแพร่และแลกเปลี่ยนเรียนรู้ '+
+    'ไม่รวมกระบวนการยื่นข้อเสนอโครงการหรือการพิจารณาจัดสรรทุน</p></div>'+
+   '<div class="card"><h3>สิทธิ์ผู้ใช้ 4 กลุ่ม</h3><dl class="kv">'+
+     kv('บุคคลทั่วไป','สืบค้น ไล่เรียง และอ่านข้อมูลย่อ ไม่ต้องสมัครสมาชิก')+
+     kv('นักวิจัย','ส่งผลงาน ติดตามสถานะ อัปเดตผลการใช้ประโยชน์ ขอเอกสารฉบับเต็มของผู้อื่น')+
+     kv('เจ้าหน้าที่ สอศ.','ตรวจสอบ อนุมัติ จัดหมวดหมู่ เผยแพร่ พิจารณาคำขอ และออกรายงาน')+
+     kv('ผู้ดูแลระบบ','จัดการผู้ใช้และสิทธิ์ ข้อมูลหลัก การตั้งค่า การสำรองข้อมูล และบันทึกการใช้งาน')+
+   '</dl></div>'+
+   '<div class="card"><h3>มาตรฐานเมทาดาทา 27 รายการ</h3>'+
+    '<p style="font-size:13.5px;color:var(--ink-2);margin-bottom:12px">ใช้ดับลินคอร์ 15 องค์ประกอบเป็นแกนกลาง '+
+    'และขยายอีก 12 รายการให้เข้ากับบริบทการวิจัยอาชีวศึกษา</p>'+
+    '<div class="tw"><table><thead><tr><th style="width:130px">องค์ประกอบ</th><th style="width:170px">ชื่อภาษาไทย</th><th>การใช้ในระบบนี้</th></tr></thead><tbody>'+
+    '<tr><td colspan="3" style="background:var(--brand-soft);color:var(--brand);font-weight:600">ส่วนที่ 1 ดับลินคอร์ 15 องค์ประกอบ</td></tr>'+
+    META_DC.map(function(m){ return '<tr><td class="num">'+h(m[0])+'</td><td><b>'+h(m[1])+'</b></td><td>'+h(m[2])+'</td></tr>'; }).join('')+
+    '<tr><td colspan="3" style="background:var(--gold-soft);color:var(--gold);font-weight:600">ส่วนที่ 2 ส่วนขยายสำหรับอาชีวศึกษา 12 รายการ</td></tr>'+
+    META_EXT.map(function(m){ return '<tr><td class="num">—</td><td><b>'+h(m[0])+'</b></td><td>'+h(m[1])+'</td></tr>'; }).join('')+
+    '</tbody></table></div></div>';
+};
+
+SC['g.help'] = function(){
+  var faq = function(q,a){ return '<details class="faq"><summary>'+h(q)+'</summary><div class="a">'+a+'</div></details>'; };
+  return crumbs([{t:'หน้าแรก',go:'g.home'},{t:'คู่มือการใช้งาน'}])+
+   '<div class="pagehead"><div><h2>คู่มือการใช้งาน</h2>'+
+   '<p class="ph-sub">ทำอย่างไรในแต่ละสถานการณ์ เขียนสำหรับผู้ใช้ที่ไม่คุ้นเคยกับระบบสารสนเทศ</p></div>'+
+   backBtn('g.home','กลับหน้าแรก')+'</div>'+
+   '<div class="grid2">'+
+    '<div class="card"><h3>ถ้าท่านเป็นครูที่มีผลงาน</h3><ol style="font-size:13.5px;color:var(--ink-2);padding-left:20px;margin:0">'+
+     '<li>สมัครสมาชิกด้วยอีเมลของสถานศึกษา รอเจ้าหน้าที่ยืนยันสังกัด 1 วันทำการ</li>'+
+     '<li>เข้าสู่ระบบแล้วกดปุ่ม ส่งผลงานใหม่</li>'+
+     '<li>กรอกข้อมูล 4 ขั้นตอน ระหว่างทางกดบันทึกร่างไว้ก่อนได้</li>'+
+     '<li>รอผลการพิจารณา ดูได้จากเมนู ติดตามสถานะ ไม่ต้องโทรสอบถาม</li>'+
+     '<li>ถ้าถูกส่งกลับ ให้แก้ตามข้อเสนอแนะแล้วกดส่งกลับอีกครั้ง</li></ol></div>'+
+    '<div class="card"><h3>ถ้าท่านต้องการค้นหาผลงาน</h3><ol style="font-size:13.5px;color:var(--ink-2);padding-left:20px;margin:0">'+
+     '<li>พิมพ์คำที่นึกออกในช่องค้นหาหน้าแรก ไม่ต้องพิมพ์ชื่อเต็ม</li>'+
+     '<li>ถ้าหาไม่เจอ ให้ลองไล่เรียงตามสถานศึกษาหรือประเภทวิชาแทน</li>'+
+     '<li>ถ้ารู้เงื่อนไขชัดเจน ใช้การสืบค้นขั้นสูงกำหนดหลายช่องพร้อมกัน</li>'+
+     '<li>อ่านบทคัดย่อได้ทันที ถ้าต้องการเอกสารฉบับเต็มให้สมัครสมาชิกแล้วยื่นคำขอ</li></ol></div>'+
+   '</div>'+
+   '<h3 style="font-size:17px;margin:18px 0 10px">คำถามที่พบบ่อย</h3>'+
+   faq('ทำไมส่งผลงานแล้วระบบไม่ให้ไปขั้นถัดไป',
+       'ระบบจะตรวจความครบถ้วนก่อนทุกครั้ง ให้เลื่อนขึ้นไปดูกล่องสีแดงด้านบน จะบอกทีละข้อว่าต้องแก้อะไร ช่องที่ยังไม่ผ่านจะมีกรอบสีแดง '+
+       'สาเหตุที่พบบ่อยที่สุดคือบทคัดย่อสั้นกว่า 250 ตัวอักษร และเลือกคำสำคัญไม่ครบ 3 คำ')+
+   faq('กรอกไม่เสร็จในครั้งเดียวได้ไหม',
+       'ได้ กดปุ่ม บันทึกร่าง เมื่อใดก็ได้ ผลงานจะไปอยู่ในคลังผลงานของฉันในสถานะ ร่าง กลับมากดกรอกต่อได้ตลอด และเจ้าหน้าที่จะยังมองไม่เห็น')+
+   faq('ทำไมบุคคลทั่วไปดาวน์โหลดเอกสารฉบับเต็มไม่ได้',
+       'เพื่อคุ้มครองสิทธิ์ของเจ้าของผลงาน ระบบจึงเปิดเผยเฉพาะข้อมูลย่อ ผู้ที่ต้องการเอกสารฉบับเต็มต้องสมัครสมาชิกและระบุวัตถุประสงค์ '+
+       'เจ้าของผลงานเป็นผู้กำหนดเองได้ว่าจะอนุญาตให้ยื่นคำขอหรือไม่ ส่วนเจ้าของผลงานเองดาวน์โหลดงานตัวเองได้ทันทีโดยไม่ต้องขอ')+
+   faq('ข้อมูลติดต่อของข้าพเจ้าจะถูกเปิดเผยไหม',
+       'ไม่ ระบบปกปิดเบอร์โทรศัพท์และอีเมลในมุมมองสาธารณะโดยอัตโนมัติ รวมถึงวงเงินงบประมาณ '+
+       'ถ้าต้องการเปิดเผยข้อมูลติดต่อ ให้เปิดสวิตช์เองในขั้นตอนกำหนดการยินยอมเผยแพร่')+
+   faq('ผลงานเก่าก่อนปี 2565 จะหายไปไหม',
+       'ไม่หาย ระบบเก็บผลงานถาวรและไม่ลบเมื่อขึ้นปีงบประมาณใหม่ ต่างจากระบบเดิมที่ลบข้อมูลย้อนหลังทุก 3 ปี '+
+       'พร้อมสำรองข้อมูลอัตโนมัติทุกวันและเก็บประวัติการแก้ไขทุกรุ่น')+
+   faq('ใช้งานบนโทรศัพท์มือถือได้ไหม',
+       'ได้ทุกหน้า หน้าจอจะปรับให้อ่านง่ายบนมือถือโดยอัตโนมัติ เมนูด้านซ้ายจะเปลี่ยนเป็นแถบเลื่อนด้านบน')+
+   '<div class="card" style="margin-top:14px"><h3>ติดต่อเจ้าหน้าที่</h3>'+
+    '<p style="font-size:13.5px;color:var(--ink-2)">สำนักวิจัยและพัฒนาการอาชีวศึกษา · '+
+    'หากติดปัญหาการใช้งานที่คู่มือนี้ไม่ครอบคลุม สามารถแจ้งผ่านเมนูสอบถามเจ้าหน้าที่ในหน้าติดตามสถานะได้</p></div>';
+};
+function rolecard(r,n,d,fns){
+  var on = S.role===r;
+  var items = (NAV[r]||[]).map(function(x){ return x.t; }).join(' · ');
+  return '<button class="rolecard'+(on?' on':'')+'" type="button" data-act="role" data-a="'+r+'"'+
+    (on?' aria-current="true"':'')+'>'+
+    '<span class="n">'+h(n)+(on?'<span class="now">มุมมองปัจจุบัน</span>':'')+'</span>'+
+    '<span class="d">'+h(d)+'</span>'+
+    '<span class="rmenu"><b>เมนูที่ใช้ได้:</b> '+h(items)+'</span>'+
+    '<span class="go">'+(on?'กำลังใช้มุมมองนี้อยู่':'เข้าใช้งานมุมมองนี้ →')+'</span></button>'; }
+
+SC['g.roles'] = function(){
+  return '<div class="pagehead"><div><h2>สิทธิ์ผู้ใช้ทั้ง 4 กลุ่มของระบบ</h2>'+
+   '<p class="ph-sub">อธิบายว่าแต่ละกลุ่มทำอะไรได้บ้าง และเห็นเมนูใดบ้าง</p></div>'+
+   backBtn(ROLE_HOME[S.role],'กลับหน้าก่อนหน้า')+'</div>'+ rolepanel();
+};
+
+function rolepanel(){
+  return '<div class="card" id="roles">'+
+    '<p style="font-size:13px;color:var(--ink-2);margin-bottom:12px">ต้นแบบจำลองสิทธิ์ผู้ใช้ไว้ 4 กลุ่ม '+
+      'แต่ละกลุ่มเห็นเมนูและทำงานได้ต่างกันตามหน้าที่ กดที่การ์ดเพื่อเข้าใช้งานมุมมองนั้น '+
+      'หรือสลับได้ตลอดเวลาจากแถบด้านบน</p>'+
+    '<div class="rolecards">'+
+      rolecard('guest','บุคคลทั่วไป','สืบค้นและอ่านข้อมูลย่อของผลงาน ไม่ต้องสมัครสมาชิก หากต้องการเอกสารฉบับเต็มต้องยื่นคำขอ')+
+      rolecard('res','นักวิจัย','ส่งผลงานที่ดำเนินการเสร็จแล้วเข้าคลัง ติดตามสถานะการตรวจสอบ และดูผลงานของตนเอง')+
+      rolecard('adm','เจ้าหน้าที่ สอศ.','ตรวจสอบความครบถ้วนของเมทาดาทา อนุมัติ จัดหมวดหมู่ เผยแพร่ และออกรายงานสถิติ')+
+      rolecard('sup','ผู้ดูแลระบบ','จัดการบัญชีผู้ใช้และสิทธิ์ ดูแลข้อมูลหลักของระบบ ตั้งค่าและสำรองข้อมูล')+
+    '</div></div>'; }
+
+/* ---- เนื้อหาภายในเอกสารฉบับเต็ม (จำลอง) ----
+   สร้างจากข้อมูลของผลงานแต่ละชิ้นแบบคงที่ ให้มีศัพท์เชิงวิธีวิจัยและเชิงเทคนิค
+   ที่ไม่ปรากฏในชื่อเรื่อง บทคัดย่อ หรือคำสำคัญ เพื่อสาธิตว่าการค้นในเนื้อหาเอกสาร
+   ช่วยให้พบผลงานที่ชื่อเรื่องไม่สะท้อนเนื้อหา ตามข้อเสนอจากการสัมภาษณ์ */
+var FT_TECH = [
+ 'ชุดควบคุมสำเร็จรูปร่วมกับเซนเซอร์วัดอุณหภูมิและความชื้น',
+ 'อุปกรณ์สั่งงานผ่านโทรศัพท์มือถือ ใช้ไฟเลี้ยงจากแผงพลังงานแสงอาทิตย์',
+ 'เครื่องเชื่อมไฟฟ้าและอุปกรณ์นิรภัยตามมาตรฐานความปลอดภัยในการปฏิบัติงาน',
+ 'วัสดุเหลือใช้ในท้องถิ่นเป็นวัตถุดิบหลัก เพื่อลดต้นทุนการผลิต',
+ 'โปรแกรมเขียนแบบและเครื่องพิมพ์สามมิติสำหรับขึ้นรูปชิ้นส่วนต้นแบบ',
+ 'สื่อประกอบการสอนแบบออนไลน์ที่ผู้เรียนเปิดใช้ได้จากโทรศัพท์มือถือ',
+ 'ชุดสาธิตขนาดเล็กที่เคลื่อนย้ายได้ ใช้ได้ทั้งในห้องปฏิบัติการและนอกสถานที่',
+ 'เครื่องมือวัดมาตรฐานที่ผ่านการสอบเทียบก่อนนำมาใช้งาน'];
+var FT_METH = [
+ 'ศึกษาสภาพปัญหาจากการสอบถามครูผู้สอนและผู้เรียน แล้วนำมากำหนดแนวทางพัฒนา',
+ 'ทดลองใช้กับผู้เรียนระดับประกาศนียบัตรวิชาชีพ จำนวน 30 คน เปรียบเทียบคะแนนก่อนและหลังใช้งาน',
+ 'ให้ผู้เชี่ยวชาญ 5 ท่านตรวจสอบคุณภาพเครื่องมือก่อนนำไปใช้จริง',
+ 'เก็บข้อมูลด้วยแบบสอบถามความพึงพอใจ และแบบสังเกตการปฏิบัติงานของผู้เรียน',
+ 'จัดทำใบงานและคู่มือประกอบการใช้งาน เพื่อให้ครูผู้สอนนำไปใช้ต่อได้ทันที',
+ 'ประเมินผลร่วมกับครูฝึกในสถานประกอบการที่รับผู้เรียนเข้าฝึกประสบการณ์วิชาชีพ',
+ 'วิเคราะห์ต้นทุนการผลิตต่อชิ้น เพื่อดูความเป็นไปได้ในการผลิตเพื่อจำหน่ายจริง',
+ 'ลงพื้นที่สำรวจความต้องการของชุมชน ก่อนออกแบบร่วมกับกลุ่มผู้ใช้งาน'];
+var FT_RES = [
+ 'ผู้เรียนมีผลสัมฤทธิ์ทางการเรียนสูงขึ้นกว่าก่อนใช้งานอย่างชัดเจน',
+ 'ลดเวลาการทำงานลงได้ร้อยละ 42 เมื่อเทียบกับวิธีเดิมที่ใช้อยู่',
+ 'ผู้เชี่ยวชาญประเมินคุณภาพอยู่ในระดับมากที่สุด ค่าเฉลี่ย 4.62',
+ 'ต้นทุนการผลิตต่อชุดลดลงจากเดิม 7,800 บาท เหลือ 3,450 บาท',
+ 'ชุมชนนำไปใช้ต่อเนื่องและขยายผลไปยังกลุ่มผู้ใช้ใกล้เคียงอีก 3 กลุ่ม',
+ 'ครูผู้สอนนำไปใช้ในแผนการจัดการเรียนรู้ของภาคเรียนถัดไป',
+ 'ผลงานได้รับรางวัลจากการประกวดสิ่งประดิษฐ์ระดับภาค',
+ 'ผู้เรียนมีสมรรถนะอาชีพตามเกณฑ์ที่สถานประกอบการกำหนด'];
+/* วัสดุ อุปกรณ์ และบริบทเฉพาะของแต่ละประเภทวิชา ใส่เข้าไปในเนื้อหาเอกสาร
+   เพื่อให้ข้อความภายในรายงานสอดคล้องกับเรื่องของผลงานจริง */
+var FT_CAT = {
+ 'ช่างอุตสาหกรรม':'งานที่เกี่ยวข้องครอบคลุมการเดินสายไฟฟ้าภายในอาคาร การติดตั้งอุปกรณ์ไฟฟ้า การเชื่อมโลหะ และการตรวจสอบความปลอดภัยทางไฟฟ้าก่อนส่งมอบงาน',
+ 'เกษตรกรรม':'วัสดุที่ใช้เป็นเศษวัสดุเหลือใช้ทางการเกษตรในท้องถิ่น ได้แก่ ทางมะพร้าว ต้นกล้วย ฟางข้าว และเปลือกมะพร้าว โดยใช้เครื่องสับย่อยและเครื่องหั่นขนาดเล็กเตรียมวัตถุดิบก่อนนำไปใช้',
+ 'คหกรรม':'วัตถุดิบหลักเป็นพืชผักพื้นถิ่นที่หาได้ในชุมชน เช่น ใบชะมวง ใบเตย มะพร้าว และกล้วยน้ำว้า ขั้นตอนการเตรียมใช้เครื่องหั่นและเครื่องสับแบบมือหมุนเพื่อให้ได้ขนาดสม่ำเสมอ',
+ 'บริหารธุรกิจ':'จัดทำบัญชีต้นทุนอย่างง่ายและระบบบันทึกรายรับรายจ่ายให้กลุ่มผู้ใช้งาน พร้อมคู่มือสำหรับผู้ที่ไม่มีพื้นฐานด้านบัญชี',
+ 'ศิลปกรรม':'ออกแบบงานกราฟิกและสื่อประชาสัมพันธ์ โดยใช้ภาพถ่ายและลวดลายท้องถิ่นเป็นแนวคิดหลักในการออกแบบ',
+ 'อุตสาหกรรมท่องเที่ยว':'พัฒนาเส้นทางและสื่อนำชมร่วมกับชุมชน พร้อมฝึกอบรมเยาวชนในพื้นที่ให้เป็นผู้นำชมแหล่งท่องเที่ยว'
+};
+var FT_TYPE = {
+ 'งานวิจัยในห้องเรียน':'งานชิ้นนี้เป็นการวิจัยในห้องเรียนที่ครูผู้สอนดำเนินการควบคู่ไปกับการจัดการเรียนการสอนตามปกติ โดยเก็บข้อมูลจากผู้เรียนในห้องเรียนของตนเอง',
+ 'งานวิจัยเพื่อพัฒนาชุมชน':'ดำเนินการร่วมกับกลุ่มผู้ใช้งานในชุมชน โดยเปิดให้ชุมชนร่วมออกแบบและทดลองใช้ก่อนส่งมอบ',
+ 'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม':'ออกแบบและสร้างชิ้นงานต้นแบบ แล้วนำไปทดสอบการใช้งานจริงก่อนปรับปรุงเป็นรุ่นสมบูรณ์'
+};
+function hashId(id){ var x=0; for(var i=0;i<id.length;i++) x=(x*33+id.charCodeAt(i))>>>0; return x; }
+function fullText(r){
+  if(r._ft) return r._ft;
+  var x = hashId(r.id);
+  r._ft = 'บทที่ 1 บทนำ · '+(FT_TYPE[r.type]||'')+' '+(FT_CAT[r.cat]||'')+
+    ' · บทที่ 3 วิธีดำเนินการวิจัย · '+FT_METH[x%FT_METH.length]+
+    ' เครื่องมือและอุปกรณ์ที่ใช้ประกอบด้วย '+FT_TECH[(x>>>3)%FT_TECH.length]+
+    ' ดำเนินการ ณ '+(r.inst||'')+' ปีงบประมาณ '+(r.year||'')+
+    ' · บทที่ 4 ผลการวิจัย · '+FT_RES[(x>>>7)%FT_RES.length];
+  return r._ft;
+}
+
+/* ---- สถิติการเข้าชมรอบ 30 วัน (จำลอง) ---- */
+var HOT_KW = ['วิสาหกิจชุมชน','เกษตรอัจฉริยะ','อินเทอร์เน็ตของสรรพสิ่ง','ความเป็นจริงเสมือน','ไฟฟ้ากำลัง'];
+/* จัดลำดับความนิยมแบบคงที่ แล้วแจกยอดเข้าชมตามเส้นโค้งที่ลดหลั่น
+   อันดับต้นห่างกันชัดเจน ส่วนอันดับท้ายไล่เรียงใกล้กันตามธรรมชาติของข้อมูลการเข้าชม */
+var VIEW_CACHE = {n:-1, map:{}};
+function viewMap(){
+  var pub = by('published');
+  if(VIEW_CACHE.n === pub.length) return VIEW_CACHE.map;
+  var rank = function(r){
+    return (hashId(r.id) % 100000) + ((r.kw||[]).some(function(k){ return HOT_KW.indexOf(k)>=0; }) ? 130000 : 0);
+  };
+  var ord = pub.slice().sort(function(a,b){ return rank(b)-rank(a) || a.id.localeCompare(b.id); });
+  var m = {};
+  ord.forEach(function(r,i){
+    m[r.id] = Math.round(740*Math.pow(0.80,i) + 260*Math.pow(0.97,i) + 18 + (hashId(r.id)%7));
+  });
+  VIEW_CACHE = {n:pub.length, map:m};
+  return m;
+}
+function viewsOf(r){ return (viewMap()[r.id] || 20) + ((S.vmore && S.vmore[r.id]) || 0); }
+
+/* คืนข้อความสั้นรอบคำค้นที่พบในเนื้อหาเอกสาร พร้อมเน้นคำนั้น */
+function ftSnippet(r, q){
+  var t = fullText(r), i = t.indexOf(q);
+  if(i < 0) return '';
+  var a = Math.max(0, i-55), b = Math.min(t.length, i+q.length+75);
+  return (a>0?'…':'')+h(t.slice(a,i))+'<mark>'+h(q)+'</mark>'+h(t.slice(i+q.length,b))+(b<t.length?'…':'');
+}
+/* ผลงานนี้ตรงกับคำค้นเฉพาะในเนื้อหาเอกสาร ไม่ได้ตรงที่เมทาดาทา */
+function ftOnly(r, q){
+  if(!S.ft || !q) return false;
+  var hay = [r.title, r.inst, r.lead, r.major, r.cat, r.type].concat(r.kw||[]).join(' ');
+  return hay.indexOf(q) < 0 && fullText(r).indexOf(q) >= 0;
+}
+
+function matches(r){
+  if(r.status!=='published') return false;
+  if(S.fType && r.type!==S.fType) return false;
+  if(S.fYear && r.year!==S.fYear) return false;
+  if(S.fInst && r.inst!==S.fInst) return false;
+  if(S.fCat && r.cat!==S.fCat) return false;
+  if(S.fRegion && regionOf(r)!==S.fRegion) return false;
+  if(S.fSrc && srcOf(r)!==S.fSrc) return false;
+  var q = (S.q||'').trim();
+  if(!q) return true;
+  var hay = [r.title, r.inst, r.lead, r.major, r.cat, r.type].concat(r.kw||[]).join(' ');
+  if(hay.indexOf(q) >= 0) return true;
+  return S.ft ? fullText(r).indexOf(q) >= 0 : false;
+}
+function activeFilters(){
+  var out = [];
+  if(S.q) out.push(['q','คำค้น: '+S.q]);
+  if(S.fType) out.push(['ftype','ประเภท: '+S.fType]);
+  if(S.fYear) out.push(['fyear','ปีงบประมาณ: '+S.fYear]);
+  if(S.fInst) out.push(['finst','สถานศึกษา: '+S.fInst]);
+  if(S.fCat) out.push(['fcat','ประเภทวิชา: '+S.fCat]);
+  if(S.fRegion) out.push(['fregion','ภาค: '+S.fRegion]);
+  if(S.fSrc) out.push(['fsrc','แหล่งทุน: '+S.fSrc]);
+  return out;
+}
+/* แผงสืบค้นขั้นสูง แสดงแบบพับได้ในหน้าสืบค้นผลงาน ไม่ต้องข้ามไปอีกหน้า */
+function advPanel(){
+  var f = S.form || {};
+  return '<div class="advbox" id="advbox">'+
+   '<div class="advhd">กำหนดเงื่อนไขหลายช่องพร้อมกัน ช่องที่เว้นว่างจะไม่ถูกนำมาใช้กรอง</div>'+
+   '<div class="grid2">'+
+     fld({name:'ad_title',label:'คำในชื่อผลงาน',value:f.ad_title||'',ph:'เช่น พลังงานแสงอาทิตย์'})+
+     fld({name:'ad_kw',label:'คำสำคัญ',type:'select',opts:VOCAB,value:f.ad_kw||''})+
+     fld({name:'ad_inst',label:'สถานศึกษา',type:'select',opts:INSTS,value:f.ad_inst||''})+
+     fld({name:'ad_cat',label:'ประเภทวิชา',type:'select',opts:Object.keys(SUBJECTS),value:f.ad_cat||''})+
+     fld({name:'ad_type',label:'ประเภทผลงาน',type:'select',opts:TYPES,value:f.ad_type||''})+
+     fld({name:'ad_year',label:'ปีงบประมาณ',type:'select',opts:['2565','2566','2567','2568','2569'],value:f.ad_year||''})+
+     fld({name:'ad_src',label:'แหล่งทุนวิจัย',type:'select',opts:[SRC_IN,SRC_NRCT,SRC_TSRI],value:f.ad_src||''})+
+   '</div>'+
+   '<div class="btnrow"><button class="btn pri" type="button" data-act="advsearch">ค้นหาด้วยเงื่อนไขนี้</button>'+
+   '<button class="btn" type="button" data-act="advclear">ล้างเงื่อนไข</button></div></div>';
+}
+
+SC['g.search'] = function(){
+  var res = S.recs.filter(matches);
+  var years = []; by('published').forEach(function(r){ if(years.indexOf(r.year)<0) years.push(r.year); }); years.sort().reverse();
+  var act = activeFilters();
+  var chips = (act.length ? '<div class="chips" style="margin-bottom:10px"><span style="font-size:12px;color:var(--ink-3)">กำลังกรอง:</span>'+
+      act.map(function(a){ return '<span class="chip tag">'+h(a[1])+'<button type="button" data-act="rmfilter" data-a="'+a[0]+'" aria-label="ลบตัวกรอง '+h(a[1])+'">✕</button></span>'; }).join('')+
+      '<button class="chip" type="button" data-act="clearf">ล้างทั้งหมด</button></div>' : '')+
+    '<div class="chips" style="margin-bottom:10px"><span style="font-size:12px;color:var(--ink-3)">ประเภท:</span>'+
+    TYPES.map(function(t){ return '<button class="chip" type="button" data-act="ftype" data-a="'+h(t)+'" aria-pressed="'+(S.fType===t)+'">'+h(t)+'</button>'; }).join('')+
+    '</div><div class="chips" style="margin-bottom:12px"><span style="font-size:12px;color:var(--ink-3)">ปีงบประมาณ:</span>'+
+    years.map(function(y){ return '<button class="chip" type="button" data-act="fyear" data-a="'+h(y)+'" aria-pressed="'+(S.fYear===y)+'">'+h(y)+'</button>'; }).join('')+
+    '</div>';
+
+  var SHOW = 20, more = Math.max(0, res.length - SHOW);
+  var list = res.length ? res.slice(0, SHOW).map(function(r){
+    return '<div class="rec"><h4>'+h(r.title)+'</h4>'+
+      '<div class="met"><span>'+h(r.inst)+'</span><span>ปีงบประมาณ '+h(r.year)+'</span><span>'+h(r.type)+'</span><span class="num">'+h(r.id)+'</span></div>'+
+      (ftOnly(r, (S.q||'').trim())
+        ? '<div class="ftsnip"><b>พบในเนื้อหาเอกสารฉบับเต็ม</b> '+ftSnippet(r,(S.q||'').trim())+'</div>'
+        : '<p class="ab">'+h(r.abstract.slice(0,150))+'…</p>')+
+      '<div class="ft">'+pill(r.status)+'<span class="vw" title="จำนวนครั้งที่เปิดดูตลอด'+h(lastMonthLabel())+'">เปิดดู '+viewsOf(r)+' ครั้ง</span>'+
+      '<button class="btn sm" type="button" data-act="open" data-a="'+r.id+'">ดูรายละเอียด</button></div></div>';
+  }).join('') :
+   '<div class="alert w"><b>ไม่พบผลงานที่ตรงกับเงื่อนไข</b><br>ลองใช้คำค้นที่สั้นลง หรือ '+
+   '<button class="lnk" type="button" data-act="clearf">ล้างตัวกรองทั้งหมด</button> แล้วค้นใหม่อีกครั้ง'+
+   '<br><span style="font-size:12.5px">คำที่มีในระบบ เช่น พลังงานแสงอาทิตย์ · เกษตรอัจฉริยะ · ทวิภาคี · ไฟฟ้ากำลัง</span></div>';
+
+  return crumbs([{t:'หน้าแรก',go:'g.home'},{t:'สืบค้นผลงาน'}])+
+    '<div class="pagehead"><div><h2>'+(S.q ? 'ผลการค้นหา “'+h(S.q)+'”' : 'ผลงานที่เผยแพร่แล้ว')+'</h2>'+
+    '<p class="ph-sub">พบ '+res.length+' รายการ</p></div>'+backBtn('g.home','กลับหน้าแรก')+'</div>'+
+    '<div class="card"><div class="field" style="margin-bottom:8px"><label for="f_q">คำค้น</label>'+
+      '<input id="f_q" data-f="q" type="text" value="'+h(S.q)+'" placeholder="พิมพ์คำค้นแล้วกดค้นหา"></div>'+
+      '<label class="ck" style="margin:2px 0 10px"><input type="checkbox" data-f="ftsw"'+(S.ft?' checked':'')+'> '+
+        'ค้นหาลงลึกถึงเนื้อหาภายในไฟล์เอกสารฉบับเต็มด้วย</label>'+
+      '<p style="font-size:12px;color:var(--ink-3);margin:-6px 0 10px">'+
+        'ระบบเปิดการค้นในเนื้อหาเอกสารไว้ตั้งแต่แรก จึงค้นได้ลึกกว่าชื่อผลงานและคำสำคัญ '+
+        'ช่วยให้พบผลงานที่ชื่อเรื่องไม่สะท้อนเนื้อหา เอาเครื่องหมายถูกออกหากต้องการค้นเฉพาะชื่อผลงาน คำสำคัญ ผู้วิจัย และสถานศึกษา<br>'+
+        '<b>ลองคำว่า</b> ไฟฟ้า · มะพร้าว · ใบชะมวง · เครื่องหั่น · เครื่องสับ · ในห้องเรียน · ฝึกประสบการณ์วิชาชีพ · ผลสัมฤทธิ์ทางการเรียน · ต้นทุนการผลิต · ใบงาน · สมรรถนะอาชีพ</p>'+
+      '<div class="btnrow" style="margin-bottom:12px"><button class="btn pri" type="button" data-act="search">ค้นหา</button>'+
+      '<button class="btn" type="button" data-act="advtoggle" aria-expanded="'+(S.adv?'true':'false')+'" aria-controls="advbox">'+
+        (S.adv?'ซ่อนการสืบค้นขั้นสูง':'สืบค้นขั้นสูง')+'</button></div>'+
+      (S.adv ? advPanel() : '')+
+      chips+'</div>'+ list +
+    (more ? '<div class="alert i">แสดง '+SHOW+' รายการแรกจากทั้งหมด '+res.length+' รายการ · '+
+      'ใช้ตัวกรองหรือค้นหาขั้นสูงเพื่อให้ผลลัพธ์แคบลง</div>' : '')+
+    '<div class="alert i">ผลการค้นหาแสดงเฉพาะข้อมูลย่อ การเข้าถึงเอกสารฉบับเต็มต้องเข้าสู่ระบบและระบุวัตถุประสงค์การใช้งาน</div>';
+};
+
+SC['g.detail'] = function(){
+  var r = rec(S.cur); if(!r) return '<div class="alert b">ไม่พบผลงานนี้</div>'+backBtn('g.search');
+  var isGuest = S.role==='guest';
+  var isMine = r.owner===ME && S.role==='res';
+  return crumbs([{t:'หน้าแรก',go:'g.home'},{t:'สืบค้นผลงาน',go:'g.search'},{t:'รายละเอียดผลงาน'}])+
+   '<div class="pagehead"><div><h2>'+h(r.title)+'</h2>'+
+   '<p class="ph-sub">'+h(r.inst)+' · ปีงบประมาณ '+h(r.year)+' · <span class="num">'+h(r.id)+'</span></p></div>'+backBtn('g.search','กลับผลการค้นหา')+'</div>'+
+   '<div class="chips" style="margin-bottom:14px">'+pill(r.status)+'<span class="chip tag">'+h(r.type)+'</span><span class="chip tag">'+h(r.cat)+'</span></div>'+
+   '<div class="card"><h3>บทคัดย่อ</h3><p style="font-size:14px;color:var(--ink-2)">'+h(r.abstract)+'</p></div>'+
+   '<div class="card"><h3>รายการเมทาดาทา</h3><dl class="kv">'+
+     kv('ผู้สร้างสรรค์ผลงาน', r.lead)+ kv('ผู้ร่วมวิจัย', r.co||'—')+ kv('สถานศึกษาต้นสังกัด', r.inst)+
+     kv('ประเภททุน', r.fund)+ kv('แหล่งทุนวิจัย', srcOf(r))+ kv('ประเภทวิชา / สาขาวิชา', r.cat+' · '+r.major)+ kv('ระดับการศึกษาที่นำไปใช้', r.level||'—')+
+     kv('กลุ่มเป้าหมาย', r.target||'—')+ kv('ขอบเขตพื้นที่', r.area||'—')+ kv('ภาษาของผลงาน','ภาษาไทย')+
+     kv('สิทธิ์การเข้าถึง','เปิดเผยข้อมูลย่อ · เอกสารฉบับเต็มต้องยื่นคำขอ')+
+     kv('ข้อมูลติดต่อผู้วิจัย', isGuest ? '<span style="color:var(--ink-3)">ปกปิดในมุมมองสาธารณะ ตามนโยบายคุ้มครองข้อมูลส่วนบุคคล</span>' : 'somchai.j@sattahip.ac.th')+
+     kv('ช่องทางติดต่อหน่วยงาน', 'สำนักวิจัยและพัฒนาการอาชีวศึกษา<br><span class="num">research@vec.go.th</span> · โทร 0 2026 5555 ต่อ 1401')+
+     kv('คำสำคัญ', (r.kw||[]).map(function(k){return '<span class="chip tag">'+h(k)+'</span>';}).join(' ') || '—')+
+   '</dl></div>'+
+   (isMine ?
+     '<div class="alert g"><b>ผลงานของท่านเอง</b> · ดาวน์โหลดเอกสารได้ทันทีโดยไม่ต้องยื่นคำขอ '+
+     '<button class="lnk" type="button" data-act="dl" data-a="'+r.id+'">ดาวน์โหลดเอกสารฉบับเต็ม</button></div>'
+   :
+     '<div class="lock"><p><b>เอกสารฉบับเต็ม · รายงานวิจัยฉบับสมบูรณ์ (PDF)</b><br>'+
+     (isGuest ? 'ต้องเข้าสู่ระบบและระบุวัตถุประสงค์การใช้งานก่อนจึงจะยื่นคำขอได้'
+              : 'ยื่นคำขอแล้วรอเจ้าหน้าที่พิจารณา โดยปกติภายใน 3 วันทำการ')+'</p>'+
+     (isGuest ? '<button class="btn pri" type="button" data-act="go" data-a="g.register">สมัครสมาชิกเพื่อขอเอกสาร</button>'
+              : '<button class="btn pri" type="button" data-act="askdoc" data-a="'+r.id+'">ยื่นขอเอกสารฉบับเต็ม</button>')+
+     (isGuest ? '<p class="lock-alt">หน่วยงานภายนอกหรือผู้สนใจที่ไม่สามารถสมัครสมาชิกได้ สามารถติดต่อขอข้อมูลเพิ่มเติมได้ที่สำนักวิจัยและพัฒนาการอาชีวศึกษา <span class="num">research@vec.go.th</span></p>' : '')+'</div>')+
+   (r.util && r.util.orgs && r.util.orgs.length ?
+     '<div class="card"><h3>การนำไปใช้ประโยชน์</h3><div class="tw"><table><thead><tr><th>หน่วยงาน</th><th>ลักษณะการนำไปใช้</th><th>ปี</th></tr></thead><tbody>'+
+     r.util.orgs.map(function(o){ return '<tr><td><b>'+h(o.n)+'</b></td><td>'+h(o.u)+'</td><td class="num">'+h(o.y)+'</td></tr>'; }).join('')+
+     '</tbody></table></div></div>' : '');
+};
+function kv(k,v){ return '<dt>'+h(k)+'</dt><dd>'+v+'</dd>'; }
+
+SC['g.register'] = function(){
+  return crumbs([{t:'หน้าแรก',go:'g.home'},{t:'สมัครสมาชิก'}])+
+   '<div class="pagehead"><div><h2>สมัครสมาชิกสำหรับนักวิจัยอาชีวศึกษา</h2>'+
+   '<p class="ph-sub">ยืนยันสังกัดด้วยอีเมลหน่วยงาน บัญชีจะใช้งานได้หลังเจ้าหน้าที่ตรวจสอบ</p></div>'+backBtn('g.home','กลับหน้าแรก')+'</div>'+
+   '<div class="steps">'+
+     '<div class="'+(S.v02?'done':'on')+'"><b>ขั้นที่ 1</b>ข้อมูลผู้ใช้</div>'+
+     '<div class="'+((S.v02==='ok'||S.v02==='sent')?'done':(S.v02?'on':''))+'"><b>ขั้นที่ 2</b>ตรวจสอบสังกัดกับ ศธ.02</div>'+
+     '<div class="'+((S.v02==='ok'||S.v02==='sent')?'on':'')+'"><b>ขั้นที่ 3</b>ยืนยันอีเมล</div>'+
+     '<div><b>ขั้นที่ 4</b>รอเจ้าหน้าที่อนุมัติ</div></div>'+
+   errSummary()+
+   '<div class="card"><div class="grid2">'+
+     fld({name:'rg_name',label:'ชื่อ–นามสกุล',req:true,value:(S.form&&S.form.rg_name)||'',ph:'เช่น นายสมชาย ใจดี'})+
+     fld({name:'rg_email',label:'อีเมลหน่วยงาน',req:true,value:(S.form&&S.form.rg_email)||'',ph:'ชื่อ@วิทยาลัย.ac.th',hint:'ใช้เป็นชื่อผู้ใช้และรับการแจ้งเตือนสถานะผลงาน'})+
+     fld({name:'rg_inst',label:'สถานศึกษาต้นสังกัด',req:true,type:'select',opts:INSTS,value:(S.form&&S.form.rg_inst)||'',hint:'เลือกจากรายการควบคุม เพื่อป้องกันการสะกดชื่อไม่ตรงกัน'})+
+     fld({name:'rg_pos',label:'ตำแหน่ง / กลุ่มงาน',req:true,value:(S.form&&S.form.rg_pos)||'',ph:'เช่น ครู วิทยฐานะครูชำนาญการ'})+
+   '</div>'+
+   '<label class="ck"><input type="checkbox" data-f="rg_ok"'+((S.form&&S.form.rg_ok)?' checked':'')+'> ยอมรับเงื่อนไขการใช้งานและนโยบายคุ้มครองข้อมูลส่วนบุคคล</label>'+
+   (S.errs.rg_ok?'<div class="err" style="color:var(--bad);font-size:12px">'+h(S.errs.rg_ok)+'</div>':'')+
+   '<p style="font-size:12px;color:var(--ink-3);margin:10px 0 0;line-height:1.55">ต้นแบบนี้ยังไม่ได้เชื่อมต่อฐานข้อมูล ศธ.02 ออนไลน์จริง จำลองผลการตรวจสอบจากโดเมนของอีเมลหน่วยงานที่กรอก หากลงท้ายด้วย .ac.th จะแสดงกรณีพบข้อมูล หากเป็นโดเมนอื่นจะแสดงกรณีไม่พบข้อมูล เพื่อให้ทดลองได้ทั้งสองกรณี</p>'+
+   vfyBox()+
+   '<div class="btnrow">'+
+     (S.v02==='loading'
+       ? '<button class="btn pri" type="button" disabled>กำลังตรวจสอบ…</button>'
+       : S.v02==='ok'
+         ? '<button class="btn pri" type="button" data-act="regsend">ยืนยันและส่งใบสมัคร</button>'
+         : S.v02==='fail'
+           ? '<button class="btn pri" type="button" data-act="register">ตรวจสอบอีกครั้ง</button>'
+           : S.v02==='alt'
+             ? '<button class="btn pri" type="button" data-act="regalt">ส่งคำขอพร้อมเอกสาร</button>'+
+               '<button class="btn" type="button" data-act="v02back">← ย้อนกลับ</button>'
+             : S.v02==='sent'
+               ? ''
+               : '<button class="btn pri" type="button" data-act="register">ตรวจสอบสังกัดและส่งใบสมัคร</button>')+
+     backBtn('g.home', S.v02==='sent' ? 'กลับหน้าแรก' : 'ยกเลิก')+'</div></div>';
+};
+
+/* กล่องแสดงผลการตรวจสอบสังกัดกับฐานข้อมูล ศธ.02
+   ต้นแบบไม่ได้เชื่อมต่อ ศธ.02 จริง จำลองผลจากโดเมนอีเมลหน่วยงานที่กรอก
+   เพื่อให้สาธิตได้ทั้งกรณีพบข้อมูลและไม่พบข้อมูล */
+function vfyBox(){
+  var f = S.form || {};
+  if(!S.v02) return '';
+  if(S.v02==='loading')
+    return '<div class="vfy" role="status" aria-live="polite"><div class="spin"></div><div class="tx">'+
+      '<div class="tt">ระบบกำลังตรวจสอบข้อมูลของท่านกับฐานข้อมูลระบบบริหารสถานศึกษา ศธ.02 ออนไลน์</div>'+
+      '<div class="ds">กรุณารอสักครู่ ระบบกำลังเทียบชื่อ–นามสกุล อีเมลหน่วยงาน และสถานศึกษาต้นสังกัดที่ท่านกรอก</div>'+
+      '</div></div>';
+  if(S.v02==='ok')
+    return '<div class="vfy ok" role="status" aria-live="polite"><div class="ic" aria-hidden="true">✓</div><div class="tx">'+
+      '<div class="tt">ตรวจสอบข้อมูลถูกต้อง</div>'+
+      '<div class="ds">พบข้อมูลของ '+h(f.rg_name||'')+' สังกัด '+h(f.rg_inst||'')+' ในฐานข้อมูล ศธ.02 ออนไลน์ '+
+      'กดยืนยันเพื่อส่งใบสมัคร ระบบจะส่งลิงก์ยืนยันอีเมลไปที่ '+h(f.rg_email||'')+'</div></div></div>';
+  if(S.v02==='alt')
+    return '<div class="vfy" role="group" aria-label="แนบหนังสือรับรองจากสถานศึกษา"><div class="ic" aria-hidden="true" '+
+      'style="background:var(--brand-soft);color:var(--brand-2)">📄</div><div class="tx" style="flex:1">'+
+      '<div class="tt">แนบหนังสือรับรองการปฏิบัติงานจากสถานศึกษาต้นสังกัด</div>'+
+      '<div class="ds">ใช้สำหรับผู้ที่ปฏิบัติงานจริงแต่ตรวจไม่พบใน ศธ.02 เช่น ครูอัตราจ้าง พนักงานราชการ ลูกจ้างชั่วคราว '+
+      'บุคลากรของสถาบันการอาชีวศึกษา หรือผู้ที่เพิ่งย้ายสถานศึกษาและทะเบียนประวัติยังไม่ปรับปรุง</div>'+
+      '<div class="updrop">'+
+        '<label for="f_rg_doc" style="display:block;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:6px">'+
+        'เลือกไฟล์หนังสือรับรอง</label>'+
+        '<input id="f_rg_doc" type="file" data-doc="rg_doc" accept=".pdf,.jpg,.jpeg,.png">'+
+        '<label class="pick" for="f_rg_doc">'+(S.v02file?'เลือกไฟล์อื่น':'เลือกไฟล์จากเครื่อง')+'</label>'+
+        '<div class="ds" style="margin-top:7px">รองรับ PDF JPG หรือ PNG ขนาดไม่เกิน 10 MB '+
+        'ต้องเป็นหนังสือที่ออกโดยสถานศึกษาต้นสังกัดและมีลายมือชื่อผู้อำนวยการ</div>'+
+        (S.v02file ? '<div class="picked"><span aria-hidden="true">✓</span><span>เลือกไฟล์แล้ว '+h(S.v02file.name)+
+                     ' · '+h(S.v02file.size)+'</span></div>' : '')+
+        (S.errs.rg_doc ? '<div class="err" role="alert">'+h(S.errs.rg_doc)+'</div>' : '')+
+      '</div>'+
+      '<div class="ds" style="margin-top:9px"><b>การคุ้มครองข้อมูลส่วนบุคคล</b> · '+
+      'ระบบขอเฉพาะหนังสือรับรองสังกัด ไม่ขอสำเนาบัตรประจำตัวประชาชน เอกสารนี้ใช้เพื่อยืนยันสังกัดเท่านั้น '+
+      'เห็นได้เฉพาะเจ้าหน้าที่ผู้พิจารณา และจะถูกลบออกจากระบบเมื่ออนุมัติบัญชีแล้ว</div>'+
+      '</div></div>';
+  if(S.v02==='sent')
+    return '<div class="vfy ok" role="status" aria-live="polite"><div class="ic" aria-hidden="true">✓</div><div class="tx">'+
+      '<div class="tt">ส่งคำขอพร้อมเอกสารแล้ว</div>'+
+      '<div class="ds">คำขอของท่านเข้าคิวให้เจ้าหน้าที่ตรวจสอบด้วยตนเอง โดยปกติใช้เวลาไม่เกิน 3 วันทำการ '+
+      'ระบบจะแจ้งผลไปที่ '+h((S.form&&S.form.rg_email)||'')+'</div></div></div>';
+  return '<div class="vfy bad" role="alert"><div class="ic" aria-hidden="true">✕</div><div class="tx">'+
+    '<div class="tt">ไม่พบข้อมูลในระบบ กรุณาติดต่อกลุ่มจัดการงานบุคคล สำนักงานคณะกรรมการการอาชีวศึกษา</div>'+
+    '<div class="ds">ตรวจสอบว่าชื่อ–นามสกุลสะกดตรงกับทะเบียนประวัติ และใช้อีเมลหน่วยงานของสถานศึกษาต้นสังกัด '+
+    'หากข้อมูลถูกต้องแล้วแต่ยังไม่พบ แสดงว่าทะเบียนประวัติใน ศธ.02 อาจยังไม่ได้ปรับปรุง '+
+    'หากท่านปฏิบัติงานในสถานศึกษาจริง สามารถยืนยันด้วยเอกสารแทนได้</div>'+
+    '<div class="btnrow" style="margin-top:10px"><button class="btn sm" type="button" data-act="v02alt">'+
+    'แนบหนังสือรับรองจากสถานศึกษาแทน</button></div></div></div>';
+}
+
+SC['g.login'] = function(){
+  return crumbs([{t:'หน้าแรก',go:'g.home'},{t:'เข้าสู่ระบบ'}])+
+   '<div class="pagehead"><div><h2>เข้าสู่ระบบ</h2><p class="ph-sub">หน้าจอเดียวใช้ร่วมกันทุกสิทธิ์ ระบบจะพาไปยังหน้าหลักตามกลุ่มสิทธิ์ของบัญชี</p></div>'+
+   backBtn('g.home','กลับหน้าแรก')+'</div>'+
+   '<div class="card" style="max-width:460px">'+
+     fld({name:'lg_email',label:'อีเมลหน่วยงาน',req:true,value:(S.form&&S.form.lg_email)||''})+
+     fld({name:'lg_pw',label:'รหัสผ่าน',req:true,value:(S.form&&S.form.lg_pw)||''})+
+     '<div class="btnrow"><button class="btn pri" type="button" data-act="login">เข้าสู่ระบบ</button>'+
+     '<button class="btn" type="button" data-act="go" data-a="g.register">สมัครสมาชิก</button>'+
+     '<button class="btn ghost" type="button" data-act="go" data-a="g.search">ใช้งานแบบไม่เข้าสู่ระบบ</button></div></div>'+
+   '<div class="alert i">ต้นแบบนี้ไม่เก็บรหัสผ่านจริง หากต้องการทดลองมุมมองอื่น ให้สลับจากแถบบทบาทด้านบนได้ทันที</div>';
+};
+
+/* ---- นักวิจัย ---- */
+/* รายการติดตามสถานะผลงานของนักวิจัย เดิมเป็นเมนูแยก ย้ายมารวมในหน้าภาพรวมและการติดตามสถานะผลงาน */
+function trackList(){
+  var m = mine().filter(function(r){ return r.status!=='draft'; });
+  return '<div class="card"><h3>ติดตามสถานะผลงานของฉัน</h3>'+
+   '<p style="font-size:12.5px;color:var(--ink-2);margin-bottom:10px">'+
+   'ดูว่าผลงานแต่ละชิ้นอยู่ขั้นตอนใด และมีข้อเสนอแนะจากเจ้าหน้าที่หรือไม่ ผลงานที่ยังเป็นร่างอยู่ในคลังผลงานของฉัน</p>'+
+   (m.length ? m.map(function(r){
+     return '<div class="rec"><h4>'+h(r.title)+'</h4>'+
+       '<div class="met"><span class="num">'+h(r.id)+'</span><span>ปีงบประมาณ '+h(r.year)+'</span></div>'+
+       '<div class="ft">'+pill(r.status)+
+       '<button class="btn sm" type="button" data-act="track" data-a="'+r.id+'">ดูเส้นทางการพิจารณา</button>'+
+       (r.status==='fix'?'<button class="btn sm pri" type="button" data-act="edit" data-a="'+r.id+'">แก้ไขและส่งกลับ</button>':'')+
+       '</div></div>';
+   }).join('') : '<div class="alert i">ยังไม่มีผลงานที่ส่งเข้าระบบ</div>')+'</div>';
+}
+
+SC['r.home'] = function(){
+  var m = mine();
+  var c = function(s){ return m.filter(function(r){return r.status===s;}).length; };
+  var fixes = m.filter(function(r){ return r.status==='fix'; });
+  return '<div class="pagehead"><div><h2>สวัสดี '+h(ME)+'</h2><p class="ph-sub">'+h(MY_INST)+'</p></div></div>'+
+   '<div class="tiles">'+tile('ร่าง',c('draft'))+tile('รอตรวจสอบ',c('wait'),'w')+tile('ต้องแก้ไข',c('fix'),'b')+
+     tile('อนุมัติ',c('approved'),'i')+tile('เผยแพร่แล้ว',c('published'),'g')+'</div>'+
+   (fixes.length ? fixes.map(function(r){
+     return '<div class="alert b"><b>ต้องดำเนินการ</b> · ผลงาน “'+h(r.title)+'” ถูกส่งกลับเพื่อแก้ไข'+
+       (r.due?' กำหนดส่งคืน '+h(r.due):'')+' <button class="lnk" type="button" data-act="track" data-a="'+r.id+'">ดูข้อเสนอแนะ</button></div>'; }).join('')
+    : '<div class="alert g">ไม่มีงานค้างที่ต้องแก้ไข ผลงานทุกชิ้นของท่านอยู่ระหว่างดำเนินการตามปกติ</div>')+
+   trackList()+
+   '<div class="card"><h3>การแจ้งเตือนผลการพิจารณา'+(unread()?' <span class="cnt" style="background:var(--bad);color:#fff;font-size:11px;border-radius:9px;padding:0 7px">'+unread()+' ใหม่</span>':'')+'</h3>'+
+    (S.notes.length ? S.notes.slice(0,6).map(function(n,i){
+      return '<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="width:8px;height:8px;border-radius:50%;margin-top:8px;flex:0 0 auto;background:'+(n.read?'var(--line-2)':'var(--bad)')+'"></span>'+
+        '<div style="flex:1;min-width:0"><div style="font-size:13.5px;color:var(--ink)'+(n.read?'':';font-weight:600')+'">'+h(n.msg)+'</div>'+
+        '<div style="font-size:11.5px;color:var(--ink-3)" class="num">'+h(n.t)+(n.rec?' · '+h(n.rec):'')+'</div></div>'+
+        (n.rec?'<button class="btn sm" type="button" data-act="opennote" data-a="'+i+'">เปิดดู</button>':'')+'</div>';
+     }).join('') + (unread()? '<div class="btnrow"><button class="btn sm" type="button" data-act="readall">ทำเครื่องหมายว่าอ่านทั้งหมด</button></div>':'')
+     : '<p style="font-size:13px;color:var(--ink-3)">ยังไม่มีการแจ้งเตือน · เมื่อเจ้าหน้าที่พิจารณาผลงานของท่าน การแจ้งเตือนจะมาปรากฏที่นี่ '+
+       '(ลองสลับเป็นมุมมองเจ้าหน้าที่ สอศ. แล้วอนุมัติหรือส่งกลับผลงานดู)</p>')+
+   '</div>'+
+   '<div class="card"><h3>ทางลัด</h3><div class="btnrow">'+
+     '<button class="btn pri" type="button" data-act="newsubmit">ส่งผลงานใหม่</button>'+
+     '<button class="btn" type="button" data-act="go" data-a="r.portfolio">คลังผลงานของฉัน</button>'+
+     '<button class="btn" type="button" data-act="go" data-a="g.search">สืบค้นผลงานของผู้อื่น</button></div></div>';
+};
+
+SC['r.portfolio'] = function(){
+  var m = mine();
+  return '<div class="pagehead"><div><h2>คลังผลงานของฉัน</h2><p class="ph-sub">'+m.length+' รายการ · เก็บถาวรทุกปีงบประมาณ ไม่ถูกลบเมื่อขึ้นปีใหม่</p></div>'+
+   '<button class="btn pri" type="button" data-act="newsubmit">ส่งผลงานใหม่</button></div>'+
+   '<div class="tw"><table><thead><tr><th>ชื่อผลงาน</th><th>ปีงบฯ</th><th>ประเภท</th><th>สถานะ</th><th>การดำเนินการ</th></tr></thead><tbody>'+
+   m.map(function(r){
+     var acts = '<button class="btn sm" type="button" data-act="dl" data-a="'+r.id+'">ดาวน์โหลด</button> ';
+     if(r.status==='fix') acts += '<button class="btn sm pri" type="button" data-act="edit" data-a="'+r.id+'">แก้ไข</button>';
+     else if(r.status==='draft') acts += '<button class="btn sm pri" type="button" data-act="edit" data-a="'+r.id+'">กรอกต่อ</button>';
+     else if(r.status==='published') acts += '<button class="btn sm" type="button" data-act="util" data-a="'+r.id+'">อัปเดตผล</button> '+
+       '<button class="btn sm" type="button" data-act="open" data-a="'+r.id+'">ดูหน้าเผยแพร่</button>';
+     else acts += '<button class="btn sm" type="button" data-act="track" data-a="'+r.id+'">ติดตามสถานะ</button>';
+     return '<tr><td><b>'+h(r.title||'(ยังไม่ได้ตั้งชื่อ)')+'</b></td><td class="num">'+h(r.year)+'</td><td>'+h(r.type)+'</td>'+
+       '<td>'+pill(r.status)+'</td><td>'+acts+'</td></tr>';
+   }).join('')+'</tbody></table></div>';
+};
+
+SC['r.status'] = function(){
+  var m = mine().filter(function(r){ return r.status!=='draft'; });
+  if(S.cur){
+    var r = rec(S.cur);
+    if(r){
+      var steps = [{t:'ส่งผลงานเข้าระบบ',s:1},{t:'เจ้าหน้าที่ตรวจสอบข้อมูลและเอกสาร',s:2},{t:'ผลการพิจารณา',s:3},
+                   {t:'จัดหมวดหมู่และกำหนดวันเผยแพร่',s:4},{t:'เผยแพร่บนระบบ',s:5}];
+      var at = r.status==='wait'?2 : r.status==='fix'?3 : r.status==='approved'?4 : r.status==='published'?5 : 1;
+      var tl = steps.map(function(x){
+        var cls = x.s<at ? 'done' : (x.s===at ? 'now' : '');
+        var extra = '';
+        if(x.s===3 && r.status==='fix' && r.feedback){
+          extra = '<div class="m"><b>ข้อเสนอแนะจากเจ้าหน้าที่</b><ol style="margin:5px 0 0;padding-left:19px">'+
+            r.feedback.map(function(f){ return '<li>'+h(f)+'</li>'; }).join('')+'</ol></div>';
+        }
+        var when = '';
+        (r.hist||[]).forEach(function(hh){ if(hh.t.indexOf(x.t.slice(0,8))===0) when = hh.d; });
+        return '<div class="it '+cls+'"><div class="t">'+h(x.t)+'</div><div class="d">'+(cls==='done'?'ดำเนินการแล้ว'+(when?' · '+h(when):''):(cls==='now'?'ขั้นตอนปัจจุบัน':'รอดำเนินการ'))+'</div>'+extra+'</div>';
+      }).join('');
+      return crumbs([{t:'ภาพรวมและการติดตามสถานะผลงาน',go:'r.home'},{t:'เส้นทางการพิจารณา'}])+
+        '<div class="pagehead"><div><h2>'+h(r.title)+'</h2><p class="ph-sub"><span class="num">'+h(r.id)+'</span></p></div>'+pill(r.status)+'</div>'+
+        '<div class="card"><div class="tl">'+tl+'</div></div>'+
+        '<div class="btnrow">'+backBtn('r.home','กลับหน้าภาพรวม')+
+        (r.status==='fix' ? '<button class="btn pri" type="button" data-act="edit" data-a="'+r.id+'">แก้ไขและส่งกลับ</button>' : '')+'</div>';
+    }
+  }
+  return SC['r.home']();
+};
+
+SC['r.profile'] = function(){
+  return '<div class="pagehead"><div><h2>ข้อมูลส่วนตัว</h2><p class="ph-sub">ช่องที่เป็นสีเทาแก้ไขเองไม่ได้ ต้องยื่นคำขอผ่านเจ้าหน้าที่ เพื่อรักษาความถูกต้องของการอ้างอิง</p></div></div>'+
+   '<div class="card"><div class="grid2">'+
+     fld({name:'pf_name',label:'ชื่อ–นามสกุล',value:(S.form&&S.form.pf_name)||ME,hint:'แก้ไขได้ · ชื่อบนผลงานที่เผยแพร่แล้วจะไม่เปลี่ยนตามอัตโนมัติ'})+
+     fld({name:'pf_en',label:'ชื่อ–นามสกุล (ภาษาอังกฤษ)',value:(S.form&&S.form.pf_en)||'Somchai Jaidee',hint:'ใช้ในเมทาดาทาและการส่งออกข้อมูลแบบเปิด'})+
+     fld({name:'pf_email',label:'อีเมล (ชื่อผู้ใช้)',value:'somchai.j@sattahip.ac.th',ro:true,hint:'แก้ไขไม่ได้ · หากเปลี่ยนสังกัดต้องแจ้งเจ้าหน้าที่'})+
+     fld({name:'pf_inst',label:'สถานศึกษาต้นสังกัด',value:MY_INST,ro:true,hint:'แก้ไขไม่ได้ · ยื่นคำขอย้ายสังกัดจากปุ่มด้านล่าง'})+
+     fld({name:'pf_pos',label:'ตำแหน่ง',value:(S.form&&S.form.pf_pos)||'ครู วิทยฐานะครูชำนาญการ'})+
+     fld({name:'pf_rid',label:'รหัสนักวิจัย',value:'VEC-RS-024871',ro:true,hint:'ระบบกำหนดให้อัตโนมัติ ใช้เชื่อมโยงผลงานทุกชิ้น'})+
+   '</div>'+
+   '<h3 style="margin-top:6px">การแจ้งเตือน</h3>'+
+   '<div class="sw"><div><div class="tt">แจ้งเตือนเมื่อผลงานเปลี่ยนสถานะ</div><div class="ts">ทางอีเมลและในระบบ</div></div><input type="checkbox" checked></div>'+
+   '<div class="sw"><div><div class="tt">แจ้งเตือนเมื่อมีผู้ยื่นขอเอกสารฉบับเต็มของฉัน</div><div class="ts">ทางอีเมลและในระบบ</div></div><input type="checkbox" checked></div>'+
+   '<div class="btnrow"><button class="btn pri" type="button" data-act="saveprofile">บันทึกการเปลี่ยนแปลง</button>'+
+   '<button class="btn" type="button" data-act="movereq">ยื่นคำขอย้ายสังกัด</button></div></div>';
+};
+
+/* ---- ฟอร์มส่งผลงาน ---- */
+function blankForm(){ return {id:'', title:'',titleEn:'',type:'',fund:'',year:'',yearDone:'',cat:'',major:'',
+  inst:MY_INST, lead:ME, co:'', level:'', target:'', area:'', abstract:'', kw:[], files:{full:false,abs:false,img:false},
+  consent:{pub:true,req:true,contact:false,hold:false}, editing:false}; }
+
+SC['r.submit'] = function(){
+  if(!S.form || !S.form.hasOwnProperty('title')) S.form = blankForm();
+  var f = S.form;
+  var stepbar = ['รายละเอียดผลงาน','แนบไฟล์เอกสาร','การยินยอมเผยแพร่','ตรวจทานและส่ง'].map(function(t,i){
+    var n=i+1; return '<div class="'+(n===S.step?'on':(n<S.step?'done':''))+'"><b>ขั้นที่ '+n+'</b>'+t+'</div>'; }).join('');
+  var head = '<div class="pagehead"><div><h2>'+(f.editing?'แก้ไขผลงานตามข้อเสนอแนะ':'ส่งผลงานเข้าระบบ')+'</h2>'+
+    '<p class="ph-sub">'+(f.editing?('รหัสผลงาน '+h(f.id)+' · แก้ไขแล้วกดส่งกลับให้เจ้าหน้าที่'):'กรอกครั้งเดียวใช้ได้กับทุกประเภททุน บันทึกร่างระหว่างทางได้')+'</p></div>'+
+    '<button class="btn" type="button" data-act="cancelform">ยกเลิกและออก</button></div>'+
+    '<div class="steps">'+stepbar+'</div>'+errSummary();
+
+  if(S.step===1){
+    var majors = f.cat ? SUBJECTS[f.cat] : [];
+    return head + '<div class="card"><div class="grid2">'+
+      fld({name:'title',label:'ชื่อผลงาน (ภาษาไทย)',req:true,value:f.title,ph:'ระบุชื่อผลงานให้สะท้อนเนื้อหา'})+
+      fld({name:'titleEn',label:'ชื่อผลงาน (ภาษาอังกฤษ)',value:f.titleEn,ph:'ถ้ามี'})+
+      fld({name:'type',label:'ประเภทผลงาน',req:true,type:'select',opts:TYPES,value:f.type})+
+      fld({name:'fund',label:'ประเภททุนที่ได้รับ',req:true,type:'select',opts:FUNDS,value:f.fund,hint:f.fund?('แหล่งทุนวิจัย: '+FUND_SRC[f.fund]):'ระบบจะระบุแหล่งทุนวิจัยให้อัตโนมัติจากประเภททุนที่เลือก'})+
+      fld({name:'year',label:'ปีงบประมาณที่ได้รับทุน',req:true,type:'select',opts:['2565','2566','2567','2568','2569'],value:f.year})+
+      fld({name:'yearDone',label:'ปีที่ดำเนินการแล้วเสร็จ',req:true,type:'select',opts:['2565','2566','2567','2568','2569'],value:f.yearDone})+
+      fld({name:'cat',label:'ประเภทวิชา',req:true,type:'select',opts:Object.keys(SUBJECTS),value:f.cat})+
+      fld({name:'major',label:'สาขาวิชา',req:true,type:'select',opts:majors,value:f.major,hint:f.cat?'รายการเปลี่ยนตามประเภทวิชาที่เลือก':'เลือกประเภทวิชาก่อน'})+
+      fld({name:'inst',label:'สถานศึกษาต้นสังกัด',value:f.inst,ro:true,hint:'ดึงจากโปรไฟล์อัตโนมัติ'})+
+      fld({name:'lead',label:'หัวหน้าโครงการ',value:f.lead,ro:true})+
+      fld({name:'co',label:'ผู้ร่วมวิจัย',value:f.co,ph:'คั่นด้วยเครื่องหมายจุลภาค'})+
+      fld({name:'level',label:'ระดับการศึกษาที่นำไปใช้',type:'select',opts:LEVELS,value:f.level})+
+      fld({name:'target',label:'กลุ่มเป้าหมาย',req:true,value:f.target,ph:'เช่น ครูผู้สอนรายวิชาไฟฟ้ากำลัง'})+
+      fld({name:'area',label:'ขอบเขตพื้นที่ดำเนินการ',type:'select',opts:AREAS,value:f.area})+
+      '</div>'+
+      fld({name:'abstract',label:'บทคัดย่อ (ภาษาไทย)',req:true,type:'textarea',value:f.abstract,
+           counter:(f.abstract||'').length, ph:'สรุปวัตถุประสงค์ วิธีดำเนินการ และผลการวิจัย'})+
+      '<div class="field'+(S.errs.kw?' bad':'')+'"><label for="f_kwsel">คำสำคัญ <span class="req">*</span></label>'+
+        '<div class="chips" style="margin-bottom:6px">'+
+        (f.kw.length? f.kw.map(function(k){ return '<span class="chip tag">'+h(k)+'<button type="button" data-act="rmkw" data-a="'+h(k)+'" aria-label="ลบคำสำคัญ '+h(k)+'">✕</button></span>'; }).join('')
+          : '<span style="font-size:12.5px;color:var(--ink-3)">ยังไม่ได้เลือกคำสำคัญ</span>')+'</div>'+
+        '<select id="f_kwsel" data-f="kwsel"><option value="">— เลือกจากบัญชีคำศัพท์ควบคุม —</option>'+
+        VOCAB.filter(function(v){ return f.kw.indexOf(v)<0; }).map(function(v){ return '<option value="'+h(v)+'">'+h(v)+'</option>'; }).join('')+
+        '</select>'+
+        (S.errs.kw?'<div class="err" role="alert">'+h(S.errs.kw)+'</div>':'<div class="hint">เลือกอย่างน้อย 3 คำ ใช้บัญชีคำศัพท์ควบคุมเพื่อให้ค้นหาเจอตรงกันทุกปี</div>')+
+      '</div>'+
+      '<div class="btnrow"><button class="btn pri" type="button" data-act="next">ถัดไป: แนบไฟล์เอกสาร</button>'+
+      '<button class="btn" type="button" data-act="draft">บันทึกร่าง</button>'+
+      '<button class="btn" type="button" data-act="cancelform">ยกเลิก</button></div></div>';
+  }
+  if(S.step===2){
+    var row = function(key,name,cond,fmt){
+      var on = !!f.files[key];
+      return '<tr><td><b>'+h(name)+'</b></td><td>'+h(cond)+'</td><td>'+h(fmt)+'</td>'+
+        '<td><label class="ck" style="padding:0"><input type="checkbox" data-file="'+key+'"'+(on?' checked':'')+'> '+
+        (on?'<span style="color:var(--ok);font-weight:600">แนบแล้ว</span>':'<span style="color:var(--ink-3)">ยังไม่แนบ</span>')+'</label></td></tr>';
+    };
+    return head + '<div class="card"><h3>เอกสารประกอบ</h3>'+
+      '<p style="font-size:13px;color:var(--ink-2);margin-bottom:10px">ต้นแบบนี้จำลองการอัปโหลดด้วยการติ๊กเลือก เอกสารที่ระบุว่าบังคับต้องแนบครบจึงจะไปขั้นถัดไปได้</p>'+
+      '<div class="tw"><table><thead><tr><th>รายการเอกสาร</th><th>เงื่อนไข</th><th>รูปแบบไฟล์</th><th>สถานะ</th></tr></thead><tbody>'+
+      row('full','รายงานวิจัยฉบับสมบูรณ์','บังคับ','PDF ไม่เกิน 50 MB')+
+      row('abs','บทคัดย่อ (ไทย–อังกฤษ)','บังคับ','PDF หรือ DOCX')+
+      row('img','ภาพผลงาน','บังคับ อย่างน้อย 1 ภาพ','JPG/PNG กว้าง ≥ 1200 px')+
+      row('vdo','คลิปวิดีโอสาธิตการใช้งาน','ทางเลือก','MP4 ไม่เกิน 200 MB')+
+      row('man','คู่มือการใช้งาน / แบบแปลน','ทางเลือก','PDF')+
+      row('cert','หนังสือรับรองการนำไปใช้ประโยชน์','ทางเลือก','PDF สแกนสี 300 dpi')+
+      '</tbody></table></div>'+
+      '<div class="alert w"><b>ข้อควรระวังเรื่องคุณภาพไฟล์</b> · หากรายงานเป็นภาพสแกนที่สกัดข้อความไม่ได้ ระบบจะนำไปใช้สืบค้นด้วยคำสำคัญไม่ได้ ควรอัปโหลดไฟล์ต้นฉบับ</div>'+
+      '<div class="btnrow"><button class="btn pri" type="button" data-act="next">ถัดไป: การยินยอมเผยแพร่</button>'+
+      '<button class="btn" type="button" data-act="prev">← ย้อนกลับ</button>'+
+      '<button class="btn" type="button" data-act="draft">บันทึกร่าง</button></div></div>';
+  }
+  if(S.step===3){
+    var sw = function(key,t,s,lock){
+      return '<div class="sw"><div><div class="tt">'+h(t)+'</div><div class="ts">'+h(s)+'</div></div>'+
+        '<input type="checkbox" data-consent="'+key+'"'+(f.consent[key]?' checked':'')+(lock?' disabled':'')+'></div>'; };
+    return head + '<div class="card"><h3>กำหนดระดับการเปิดเผยผลงานของท่าน</h3>'+
+      sw('pub','เปิดเผยชื่อผลงาน บทคัดย่อ และภาพต่อสาธารณะ','จำเป็นต่อการเผยแพร่ ปิดไม่ได้',true)+
+      sw('req','อนุญาตให้สมาชิกยื่นขอเอกสารฉบับเต็ม','คำขอแต่ละรายการจะแจ้งให้ท่านและเจ้าหน้าที่ทราบก่อนอนุมัติ')+
+      sw('contact','เปิดเผยข้อมูลติดต่อของหัวหน้าโครงการ','หากปิด ผู้สนใจต้องติดต่อผ่านเจ้าหน้าที่ สอศ. เท่านั้น')+
+      sw('hold','ระงับการเผยแพร่ชั่วคราวระหว่างยื่นจดอนุสิทธิบัตร','ระบุวันสิ้นสุดได้สูงสุด 12 เดือน')+
+      '<div class="btnrow"><button class="btn pri" type="button" data-act="next">ถัดไป: ตรวจทานและส่ง</button>'+
+      '<button class="btn" type="button" data-act="prev">← ย้อนกลับ</button></div></div>';
+  }
+  /* ขั้นที่ 4 */
+  return head + '<div class="card"><h3>ตรวจทานก่อนส่ง</h3>'+
+    '<dl class="kv">'+ kv('ชื่อผลงาน', h(f.title)) + kv('ประเภทผลงาน', h(f.type)) + kv('ประเภททุน', h(f.fund))+
+      kv('ปีงบประมาณ', h(f.year)+' · แล้วเสร็จ '+h(f.yearDone)) + kv('ประเภทวิชา / สาขาวิชา', h(f.cat)+' · '+h(f.major))+
+      kv('กลุ่มเป้าหมาย', h(f.target)) + kv('ความยาวบทคัดย่อ', (f.abstract||'').length+' ตัวอักษร')+
+      kv('คำสำคัญ', f.kw.map(function(k){return '<span class="chip tag">'+h(k)+'</span>';}).join(' '))+
+      kv('เอกสารบังคับ', (f.files.full&&f.files.abs&&f.files.img) ? '<span style="color:var(--ok)">แนบครบแล้ว</span>' : '<span style="color:var(--bad)">ยังไม่ครบ</span>')+
+    '</dl>'+
+    '<div class="alert w" style="margin-top:14px"><b>เมื่อกดส่งแล้วจะแก้ไขเองไม่ได้</b> จนกว่าเจ้าหน้าที่จะพิจารณาและส่งกลับ หากยังไม่พร้อม ให้บันทึกร่างไว้ก่อน</div>'+
+    '<label class="ck"><input type="checkbox" data-f="confirm"'+((S.form.confirm)?' checked':'')+'> ข้าพเจ้าตรวจทานข้อมูลครบถ้วนแล้ว และยืนยันว่าผลงานนี้ไม่เคยส่งเข้าระบบมาก่อน</label>'+
+    (S.errs.confirm?'<div class="err" style="color:var(--bad);font-size:12px">'+h(S.errs.confirm)+'</div>':'')+
+    '<div class="btnrow"><button class="btn pri" type="button" data-act="submitrec">ส่งผลงานเข้าระบบ</button>'+
+    '<button class="btn" type="button" data-act="prev">← ย้อนกลับ</button>'+
+    '<button class="btn" type="button" data-act="draft">บันทึกร่างไว้ก่อน</button></div></div>';
+};
+
+SC['r.util'] = function(){
+  var r = rec(S.cur); if(!r) return '<div class="alert b">ไม่พบผลงาน</div>'+backBtn('r.portfolio');
+  var u = r.util || {orgs:[],people:'',ip:'',ipno:'',awards:0};
+  return crumbs([{t:'คลังผลงานของฉัน',go:'r.portfolio'},{t:'อัปเดตผลการใช้ประโยชน์'}])+
+   '<div class="pagehead"><div><h2>อัปเดตผลการใช้ประโยชน์</h2><p class="ph-sub">'+h(r.title)+'</p></div>'+backBtn('r.portfolio','กลับคลังผลงาน')+'</div>'+
+   '<div class="alert i">ข้อมูลในหน้านี้ไม่ต้องผ่านการอนุมัติใหม่ แก้ไขเพิ่มเติมได้ตลอดอายุผลงาน</div>'+
+   '<div class="card"><h3>หน่วยงานที่นำผลงานไปใช้</h3>'+
+    (u.orgs.length? '<div class="tw"><table><thead><tr><th>หน่วยงาน</th><th>ลักษณะการนำไปใช้</th><th>ปี</th><th></th></tr></thead><tbody>'+
+      u.orgs.map(function(o,i){ return '<tr><td><b>'+h(o.n)+'</b></td><td>'+h(o.u)+'</td><td class="num">'+h(o.y)+'</td>'+
+        '<td><button class="btn sm bad" type="button" data-act="rmorg" data-a="'+i+'">ลบ</button></td></tr>'; }).join('')+
+      '</tbody></table></div>' : '<div class="alert i">ยังไม่ได้บันทึกหน่วยงานที่นำผลงานไปใช้</div>')+
+    '<div class="grid2">'+
+      fld({name:'uo_n',label:'ชื่อหน่วยงาน',value:(S.form&&S.form.uo_n)||'',type:'select',opts:INSTS.concat(['กลุ่มวิสาหกิจชุมชน','สถานประกอบการเอกชน','หน่วยงานราชการอื่น'])})+
+      fld({name:'uo_u',label:'ลักษณะการนำไปใช้',value:(S.form&&S.form.uo_u)||'',ph:'เช่น ใช้ประกอบการสอนรายวิชา'})+
+    '</div>'+
+    fld({name:'uo_y',label:'ปีที่นำไปใช้',type:'select',opts:['2566','2567','2568','2569'],value:(S.form&&S.form.uo_y)||''})+
+    '<div class="btnrow"><button class="btn" type="button" data-act="addorg">+ เพิ่มหน่วยงาน</button></div></div>'+
+   '<div class="card"><h3>ทรัพย์สินทางปัญญาและรางวัล</h3><div class="grid2">'+
+     fld({name:'u_people',label:'จำนวนผู้ได้รับประโยชน์โดยประมาณ (คน)',value:(S.form&&S.form.u_people!=null?S.form.u_people:u.people)})+
+     fld({name:'u_ip',label:'สถานะทรัพย์สินทางปัญญา',type:'select',opts:['ยังไม่ยื่น','ยื่นคำขออนุสิทธิบัตรแล้ว','ได้รับอนุสิทธิบัตรแล้ว','ได้รับสิทธิบัตรแล้ว'],value:(S.form&&S.form.u_ip)||u.ip})+
+     fld({name:'u_ipno',label:'เลขที่คำขอหรือเลขที่ทะเบียน',value:(S.form&&S.form.u_ipno!=null?S.form.u_ipno:u.ipno)})+
+   '</div><div class="btnrow"><button class="btn pri" type="button" data-act="saveutil">บันทึก</button>'+backBtn('r.portfolio','ยกเลิก')+'</div></div>';
+};
+
+/* ---- เจ้าหน้าที่ ---- */
+SC['a.home'] = function(){
+  var w = by('wait').length, fx = by('fix').length, ap = by('approved').length,
+      pb = by('published').length, dr = by('draft').length;
+  var all = S.recs.length;
+  var pubs = by('published');
+  var reqWait = S.reqs.filter(function(x){ return x.status==='wait'; }).length;
+  var used = pubs.filter(function(r){ return r.util && r.util.orgs && r.util.orgs.length; }).length;
+  var FN = [['draft','ร่าง',dr],['wait','รอตรวจสอบ',w],['fix','ต้องแก้ไข',fx],['approved','อนุมัติ',ap],['published','เผยแพร่',pb]];
+  var fmax = Math.max(1, Math.max.apply(null, FN.map(function(x){return x[2];})));
+  var FCOL = {draft:'var(--mute)', wait:'var(--warn)', fix:'var(--bad)', approved:'var(--info)', published:'var(--ok)'};
+
+  return '<div class="pagehead"><div><h2>กระดานภาพรวมการดำเนินงาน</h2>'+
+   '<p class="ph-sub">'+h(WHO.adm)+' · ตัวเลขทุกช่องคำนวณสดจากข้อมูลในระบบ ใช้ตอบผู้บริหารได้ทันทีโดยไม่ต้องรวบรวมเอง</p></div></div>'+
+
+   '<div class="tiles">'+tile('รอตรวจสอบ',w,'w')+tile('ส่งกลับให้แก้ไข',fx,'b')+
+     tile('รอเผยแพร่',ap,'i')+tile('เผยแพร่แล้ว',pb,'g')+tile('คำขอเอกสารรอพิจารณา',reqWait,'w')+'</div>'+
+
+   (w? '<div class="alert w"><b>มีงานรอตรวจสอบ '+w+' รายการ</b> <button class="lnk" type="button" data-act="go" data-a="a.queue">เปิดรายการรอตรวจสอบ</button></div>':'')+
+   (ap? '<div class="alert i"><b>อนุมัติแล้วรอจัดหมวดหมู่และเผยแพร่ '+ap+' รายการ</b> · ยังค้นไม่พบในระบบจนกว่าจะกดเผยแพร่ '+
+        '<button class="lnk" type="button" data-act="go" data-a="a.publishq">เปิดรายการ</button></div>':'')+
+   (!w && !ap ? '<div class="alert g">ไม่มีงานคงค้าง ทุกรายการได้รับการพิจารณาและเผยแพร่แล้ว</div>':'')+
+
+   '<div class="card"><h3>ผลงานทั้งหมด '+all+' รายการ แยกตามสถานะในกระบวนการ</h3>'+
+     '<div class="funnel">'+ FN.map(function(x){
+       var pct = Math.max(2, Math.round(x[2]/fmax*100));
+       return '<div class="fn"><span>'+h(x[1])+'</span>'+
+         '<div class="tr" title="'+h(x[1])+' — '+x[2]+' รายการ"><div class="fl" style="width:'+pct+'%;background:'+FCOL[x[0]]+'"></div></div>'+
+         '<span class="n">'+x[2]+'</span></div>'; }).join('')+'</div>'+
+     '<p style="font-size:12px;color:var(--ink-3);margin-top:10px">แต่ละแถบใช้สีประจำสถานะเดียวกับที่ปรากฏบนป้ายสถานะทั่วทั้งระบบ และกำกับด้วยชื่อสถานะเสมอ ไม่ได้สื่อความหมายด้วยสีเพียงอย่างเดียว</p>'+
+   '</div>'+
+
+   '<div class="grid2">'+
+     trendChart('แนวโน้มจำนวนผลงานที่เผยแพร่ รายปีงบประมาณ',
+       countBy(pubs,function(r){return r.year;}).sort(function(a,b){return a.k.localeCompare(b.k);}),
+       'ใช้ตอบคำถามผู้บริหารเรื่องแนวโน้มการผลิตผลงานของสถานศึกษาในสังกัด')+
+     donut('สัดส่วนผลงานแยกตามประเภท', countBy(pubs,function(r){return r.type;}))+
+   '</div>'+
+   '<div class="grid2">'+
+     barBlock('ผลงานที่เผยแพร่ แยกตามภาค', countBy(pubs, regionOf), 'รายการ')+
+     barBlock('สถานศึกษาที่ส่งผลงานมากที่สุด 8 อันดับ', countBy(pubs,function(r){return r.inst;}).slice(0,8), 'รายการ')+
+   '</div>'+
+   '<div class="grid2">'+
+     donut('สัดส่วนผลงานแยกตามแหล่งทุนวิจัย', countBy(pubs, srcOf))+
+     barBlock('ผลงานแยกตามประเภททุนที่ได้รับ', countBy(pubs,function(r){return r.fund;}), 'รายการ')+
+   '</div>'+
+
+   '<div class="card"><h3>การนำผลงานไปใช้ประโยชน์</h3>'+
+     (function(){
+       var ip = pubs.filter(function(r){ return r.util && r.util.ip && r.util.ip.indexOf('ได้รับ')===0; }).length;
+       var onlyUsed = used - ip, none = pb - used;
+       var t = Math.max(1, pb);
+       var seg = [['var(--c3)','ได้รับการคุ้มครองสิทธิบัตร/อนุสิทธิบัตร',ip],['var(--c1)','นำไปใช้จริง ยังไม่จดทรัพย์สินทางปัญญา',onlyUsed],
+                  ['var(--surface-3)','ยังไม่มีข้อมูลปลายทาง',none]];
+       return '<div class="stack">'+ seg.map(function(s){
+           return '<i style="width:'+(s[2]/t*100).toFixed(1)+'%;background:'+s[0]+'" title="'+h(s[1])+' — '+s[2]+' รายการ"></i>'; }).join('')+'</div>'+
+         '<div class="lg-list">'+ seg.map(function(s){
+           return '<div class="lg-row"><span class="dsw" style="background:'+s[0]+'"></span><span class="lg-n">'+h(s[1])+'</span>'+
+             '<span class="lg-v num">'+s[2]+'</span><span class="lg-p num">'+Math.round(s[2]/t*100)+'%</span></div>'; }).join('')+'</div>';
+     })()+
+     '<p class="chart-note">ข้อมูลส่วนนี้มาจากที่เจ้าของผลงานกรอกเองในหน้าอัปเดตผลการใช้ประโยชน์ '+
+     'ซึ่งเป็นสิ่งที่ระบบเดิมไม่มี ทำให้ติดตามผลปลายทางไม่ได้</p>'+
+     '<div class="btnrow"><button class="btn" type="button" data-act="go" data-a="a.reports">เปิดหน้ารายงานและส่งออกข้อมูล</button></div>'+
+   '</div>';
+};
+
+SC['a.queue'] = function(){
+  var list = S.recs.filter(function(r){ return r.status==='wait' || r.status==='fix'; });
+  return '<div class="pagehead"><div><h2>รายการรอตรวจสอบ</h2><p class="ph-sub">'+list.length+' รายการรอดำเนินการ</p></div></div>'+
+   (list.length? '<div class="tw"><table><thead><tr><th>รหัสผลงาน</th><th>ชื่อผลงาน / สถานศึกษา</th><th>ประเภท</th><th>สถานะ</th><th></th></tr></thead><tbody>'+
+    list.map(function(r){ return '<tr><td class="num">'+h(r.id)+'</td>'+
+      '<td><b>'+h(r.title)+'</b><br>'+h(r.inst)+'</td><td>'+h(r.type)+'</td><td>'+pill(r.status)+'</td>'+
+      '<td>'+(r.status==='wait' ? '<button class="btn sm pri" type="button" data-act="review" data-a="'+r.id+'">เปิดตรวจ</button>'
+                                : '<span style="font-size:12px;color:var(--ink-3)">รอนักวิจัยแก้ไข</span>')+'</td></tr>'; }).join('')+
+    '</tbody></table></div>'
+    : '<div class="alert g">ไม่มีผลงานค้างในคิว ทุกรายการได้รับการพิจารณาแล้ว</div>');
+};
+
+SC['a.review'] = function(){
+  var r = rec(S.cur); if(!r) return '<div class="alert b">ไม่พบผลงาน</div>'+backBtn('a.queue');
+  var CK = [['t1','ชื่อผลงานสอดคล้องกับเนื้อหาในรายงาน'],['t2','บทคัดย่อครบถ้วนและมีความยาวเพียงพอ'],
+            ['t3','เมทาดาทาบังคับครบถ้วน'],['t4','รายงานฉบับสมบูรณ์สกัดข้อความได้'],
+            ['t5','คำสำคัญตรงกับบัญชีคำศัพท์ควบคุม'],['t6','ไม่ปรากฏข้อมูลส่วนบุคคลของบุคคลที่สาม'],
+            ['t7','ระบุการยินยอมเผยแพร่แล้ว']];
+  var done = CK.filter(function(c){ return S.checks[c[0]]; }).length;
+  return crumbs([{t:'รายการรอตรวจสอบ',go:'a.queue'},{t:'ตรวจสอบผลงาน'}])+
+   '<div class="pagehead"><div><h2>'+h(r.title)+'</h2>'+
+   '<p class="ph-sub">'+h(r.inst)+' · ปีงบประมาณ '+h(r.year)+' · <span class="num">'+h(r.id)+'</span></p></div>'+pill(r.status)+'</div>'+
+   errSummary()+
+   '<div class="grid2">'+
+    '<div class="card"><h3>รายการตรวจความครบถ้วน <span style="font-weight:400;font-size:13px;color:var(--ink-3)">('+done+' จาก 7)</span></h3>'+
+      CK.map(function(c){ return '<label class="ck"><input type="checkbox" data-ck="'+c[0]+'"'+(S.checks[c[0]]?' checked':'')+'> '+h(c[1])+'</label>'; }).join('')+
+    '</div>'+
+    '<div class="card"><h3>ผลการตรวจความซ้ำซ้อน</h3>'+
+      (r.sim ? '<div class="alert w"><b>พบความคล้ายคลึง '+r.sim+' เปอร์เซ็นต์</b><br>กับ '+h(r.simWith)+'<br>ควรตรวจสอบว่าเป็นการต่อยอดหรือการส่งซ้ำ</div>'
+             : '<div class="alert g"><b>ไม่พบความซ้ำซ้อน</b> ค่าความคล้ายคลึงสูงสุดอยู่ที่ 18 เปอร์เซ็นต์</div>')+
+      '<dl class="kv" style="grid-template-columns:130px 1fr">'+kv('บทคัดย่อ',(r.abstract||'').length+' ตัวอักษร')+
+      kv('คำสำคัญ',(r.kw||[]).join(', ')||'—')+kv('เอกสารบังคับ',(r.files.full&&r.files.abs&&r.files.img)?'ครบ':'<span style="color:var(--bad)">ไม่ครบ</span>')+'</dl>'+
+    '</div></div>'+
+   '<div class="card"><h3>ข้อเสนอแนะถึงนักวิจัย</h3>'+
+     '<div class="field'+(S.errs.fb?' bad':'')+'"><label for="f_fb">ระบุสิ่งที่ต้องแก้ไข ทีละข้อ ขึ้นบรรทัดใหม่</label>'+
+     '<textarea id="f_fb" data-f="fb" placeholder="เช่น ขอให้เพิ่มความยาวบทคัดย่อไม่น้อยกว่า 250 ตัวอักษร">'+h(S.feedbackDraft)+'</textarea>'+
+     (S.errs.fb?'<div class="err" role="alert">'+h(S.errs.fb)+'</div>':'<div class="hint">จำเป็นเมื่อกดส่งกลับให้แก้ไข ไม่จำเป็นเมื่อกดอนุมัติ</div>')+'</div>'+
+     '<div class="btnrow"><button class="btn ok" type="button" data-act="approve" data-a="'+r.id+'">อนุมัติ</button>'+
+     '<button class="btn bad" type="button" data-act="sendback" data-a="'+r.id+'">ส่งกลับให้แก้ไข</button>'+
+     backBtn('a.queue','กลับคิว')+'</div>'+
+     '<div class="alert i" style="margin-top:12px">การกดอนุมัติยังไม่ทำให้ผลงานปรากฏต่อสาธารณะ ผลงานจะเข้าสถานะ “อนุมัติ” เพื่อรอจัดหมวดหมู่และกำหนดวันเผยแพร่ในขั้นถัดไป</div>'+
+   '</div>';
+};
+
+SC['a.publishq'] = function(){
+  var list = by('approved');
+  return '<div class="pagehead"><div><h2>รอจัดหมวดหมู่และเผยแพร่</h2><p class="ph-sub">'+list.length+' รายการ · ผ่านการอนุมัติแล้วแต่ยังค้นไม่พบในระบบ</p></div></div>'+
+   (list.length? list.map(function(r){
+     return '<div class="rec"><h4>'+h(r.title)+'</h4><div class="met"><span>'+h(r.inst)+'</span><span class="num">'+h(r.id)+'</span></div>'+
+       '<div class="ft">'+pill(r.status)+'<button class="btn sm pri" type="button" data-act="pubopen" data-a="'+r.id+'">จัดหมวดหมู่และเผยแพร่</button></div></div>';
+   }).join('') : '<div class="alert g">ไม่มีผลงานรอเผยแพร่</div>');
+};
+
+SC['a.publish'] = function(){
+  var r = rec(S.cur); if(!r) return '<div class="alert b">ไม่พบผลงาน</div>'+backBtn('a.publishq');
+  var unknown = (r.kw||[]).filter(function(k){ return VOCAB.indexOf(k)<0; });
+  return crumbs([{t:'รายการรอเผยแพร่',go:'a.publishq'},{t:'จัดหมวดหมู่และเผยแพร่'}])+
+   '<div class="pagehead"><div><h2>'+h(r.title)+'</h2><p class="ph-sub">'+h(r.inst)+' · <span class="num">'+h(r.id)+'</span></p></div>'+pill(r.status)+'</div>'+
+   errSummary()+
+   '<div class="card"><h3>หมวดหมู่</h3><div class="grid2">'+
+     fld({name:'pb_strat',label:'หมวดหมู่ตามยุทธศาสตร์ สอศ.',req:true,type:'select',
+          opts:['กำลังคนสมรรถนะสูง','เศรษฐกิจหมุนเวียนและสิ่งแวดล้อม','เทคโนโลยีดิจิทัลและปัญญาประดิษฐ์','เกษตรมูลค่าสูง','การท่องเที่ยวและบริการ'],
+          value:(S.form&&S.form.pb_strat)||''})+
+     fld({name:'pb_group',label:'กลุ่มเป้าหมายผู้ใช้ประโยชน์',req:true,type:'select',
+          opts:['สถานศึกษาในสังกัด','ชุมชนและวิสาหกิจชุมชน','สถานประกอบการ','หน่วยงานภาครัฐ'],value:(S.form&&S.form.pb_group)||''})+
+     fld({name:'pb_access',label:'ระดับการเข้าถึงเอกสารฉบับเต็ม',type:'select',
+          opts:['ต้องเป็นสมาชิกและยื่นคำขอ','เปิดให้สมาชิกดาวน์โหลดได้ทันที'],value:(S.form&&S.form.pb_access)||'ต้องเป็นสมาชิกและยื่นคำขอ'})+
+     fld({name:'pb_date',label:'วันที่เผยแพร่',value:(S.form&&S.form.pb_date)||'25 ก.ย. 2569',hint:'ตั้งเวลาเผยแพร่ล่วงหน้าได้'})+
+   '</div>'+
+   '<div class="field"><label>คำสำคัญเทียบกับบัญชีคำศัพท์ควบคุม</label><div class="chips">'+
+     (r.kw||[]).map(function(k){ var ok = VOCAB.indexOf(k)>=0;
+       return '<span class="chip'+(ok?' tag':'')+'" style="'+(ok?'':'border-color:var(--warn);color:var(--warn);background:var(--warn-soft)')+'">'+h(k)+(ok?' ✓':' — ยังไม่อยู่ในบัญชี')+'</span>'; }).join('')+
+   '</div>'+(unknown.length?'<div class="hint">คำที่ยังไม่อยู่ในบัญชีจะถูกส่งเข้าคิวพิจารณาโดยอัตโนมัติเมื่อเผยแพร่</div>':'')+'</div>'+
+   '<div class="btnrow"><button class="btn ok" type="button" data-act="publish" data-a="'+r.id+'">เผยแพร่</button>'+
+   '<button class="btn bad" type="button" data-act="unapprove" data-a="'+r.id+'">ถอนการอนุมัติ</button>'+
+   backBtn('a.publishq','กลับรายการ')+'</div></div>';
+};
+
+SC['a.requests'] = function(){
+  var list = S.reqs;
+  return '<div class="pagehead"><div><h2>คำขอเอกสารฉบับเต็ม</h2>'+
+   '<p class="ph-sub">'+list.filter(function(x){return x.status==='wait';}).length+' รายการรอพิจารณา</p></div></div>'+
+   '<div class="tw"><table><thead><tr><th>ผู้ขอ / สังกัด</th><th>ผลงานที่ขอ</th><th>วัตถุประสงค์</th><th>สถานะ</th><th></th></tr></thead><tbody>'+
+   list.map(function(q){ var r = rec(q.rec);
+     return '<tr><td><b>'+h(q.by)+'</b><br>'+h(q.inst)+'</td><td>'+h(r?r.title:q.rec)+'</td><td>'+h(q.purpose)+'</td>'+
+       '<td>'+(q.status==='wait'?'<span class="pill st-wait">รอพิจารณา</span>':(q.status==='ok'?'<span class="pill st-published">อนุมัติแล้ว</span>':'<span class="pill st-fix">ปฏิเสธ</span>'))+'</td>'+
+       '<td>'+(q.status==='wait'?'<button class="btn sm ok" type="button" data-act="reqok" data-a="'+q.id+'">อนุมัติ</button> '+
+         '<button class="btn sm bad" type="button" data-act="reqno" data-a="'+q.id+'">ปฏิเสธ</button>':'—')+'</td></tr>'; }).join('')+
+   '</tbody></table></div>'+
+   '<div class="alert i">คำขอที่เจ้าของผลงานไม่ยินยอมให้เผยแพร่ ระบบจะไม่อนุมัติโดยอัตโนมัติ แต่ส่งต่อให้เจ้าของผลงานพิจารณาเป็นรายกรณี</div>';
+};
+
+SC['a.reports'] = function(){
+  var pubs = by('published');
+  return '<div class="pagehead"><div><h2>รายงานและสถิติ</h2><p class="ph-sub">คำนวณจากข้อมูลจริงในต้นแบบขณะนี้</p></div></div>'+
+   '<div class="tiles">'+tile('รับเข้าระบบทั้งหมด',S.recs.length)+tile('เผยแพร่แล้ว',pubs.length,'g')+
+     tile('รอตรวจสอบ',by('wait').length,'w')+tile('รอเผยแพร่',by('approved').length,'i')+'</div>'+
+   '<div class="grid2">'+
+     donut('สัดส่วนผลงานแยกตามประเภท', countBy(pubs,function(r){return r.type;}))+
+     barBlock('ผลงานที่เผยแพร่ แยกตามประเภทวิชา', countBy(pubs,function(r){return r.cat;}), 'รายการ')+
+   '</div>'+
+   '<div class="grid2">'+
+     trendChart('แนวโน้มรายปีงบประมาณ', countBy(pubs,function(r){return r.year;}).sort(function(a,b){return a.k.localeCompare(b.k);}))+
+     barBlock('ผลงานที่เผยแพร่ แยกตามภาค', countBy(pubs, regionOf), 'รายการ')+
+   '</div>'+
+   '<div class="grid2">'+
+     donut('สัดส่วนผลงานแยกตามแหล่งทุนวิจัย', countBy(pubs, srcOf))+
+     barBlock('ผลงานแยกตามประเภททุนที่ได้รับ', countBy(pubs,function(r){return r.fund;}), 'รายการ')+
+   '</div>'+
+   kwTrend('คำสำคัญที่พบบ่อยและทิศทางการวิจัย', 12)+
+   '<div class="card"><h3>ส่งออกข้อมูล</h3><div class="chips" style="margin-bottom:10px">'+
+     ['ไฟล์ตาราง (XLSX)','ไฟล์ CSV','รายงาน PDF','ชุดข้อมูลเมทาดาทาแบบเปิด'].map(function(x){
+       return '<button class="chip" type="button" data-act="export" data-a="'+h(x)+'">'+h(x)+'</button>'; }).join('')+
+   '</div><p class="hint" style="font-size:12.5px;color:var(--ink-3)">การส่งออกไม่รวมข้อมูลติดต่อส่วนบุคคลและวงเงินงบประมาณ เว้นแต่ผู้ใช้มีสิทธิ์ระดับผู้บริหาร</p></div>';
+};
+
+/* ---- ผู้ดูแลระบบ ---- */
+SC['s.users'] = function(){
+  var rows = [['นักวิจัย','4,186','ส่งผลงาน แก้ไขผลงานของตนเอง ติดตามสถานะ ยื่นขอเอกสาร'],
+   ['เจ้าหน้าที่ สอศ.','16','ตรวจสอบ อนุมัติ เผยแพร่ จัดหมวดหมู่ ออกรายงาน'],
+   ['ผู้บริหาร สอศ.','5','ดูรายงานทั้งหมดรวมงบประมาณ ไม่มีสิทธิ์แก้ไขข้อมูล'],
+   ['ผู้ดูแลระบบ','3','จัดการผู้ใช้ ข้อมูลหลัก การตั้งค่า สำรองข้อมูล บันทึกการใช้งาน']];
+  return '<div class="pagehead"><div><h2>ผู้ใช้และสิทธิ์</h2><p class="ph-sub">กำหนดสิทธิ์เป็นรายกลุ่มสิทธิ์ ไม่ใช่รายบุคคล</p></div></div>'+
+   '<div class="tw"><table><thead><tr><th>กลุ่มสิทธิ์</th><th>จำนวนบัญชี</th><th>สิทธิ์ที่ได้รับ</th><th></th></tr></thead><tbody>'+
+   rows.map(function(r){ return '<tr><td><b>'+h(r[0])+'</b></td><td class="num">'+h(r[1])+'</td><td>'+h(r[2])+'</td>'+
+     '<td><button class="btn sm" type="button" data-act="noop">แก้ไขสิทธิ์</button></td></tr>'; }).join('')+
+   '</tbody></table></div>'+
+   '<div class="alert i">การเปลี่ยนสิทธิ์มีผลกับทุกบัญชีในกลุ่มสิทธิ์นั้นทันที และบันทึกไว้ในบันทึกการใช้งานระบบ</div>'+
+   '<p style="font-size:12.5px;color:var(--ink-3);margin:-4px 0 12px">ต้นแบบนี้จำลองเจ้าหน้าที่ สอศ. เป็นกลุ่มสิทธิ์เดียว '+
+     'เมื่อพัฒนาเป็นระบบจริงสามารถกำหนดขอบเขตข้อมูลที่เจ้าหน้าที่แต่ละกลุ่มงานเห็นได้ '+
+     'เช่น ให้เห็นเฉพาะผลงานในประเภททุนที่กลุ่มงานของตนรับผิดชอบ</p>'+
+   '<div class="alert w"><b>สงวนไว้สำหรับผู้ดูแลระบบเท่านั้น</b> · เจ้าหน้าที่ สอศ. ช่วยยืนยันบัญชีสมาชิกใหม่และอนุมัติคำขอแก้ไขข้อมูลได้ '+
+   'แต่เปลี่ยนกลุ่มสิทธิ์ไม่ได้ เพื่อไม่ให้ผู้ใช้เพิ่มสิทธิ์ให้ตนเองหรือผู้อื่นได้โดยลำพัง</div>';
+};
+SC['a.accounts'] = function(){ return SC['s.approvals'](); };
+SC['s.approvals'] = function(){
+  var waiting = S.acct.filter(function(a){ return a.status==='wait'; });
+  var chk = {ok:['st-published','โดเมนอีเมลตรงกับสถานศึกษา'], warn:['st-wait','ใช้อีเมลส่วนตัว ต้องตรวจสอบเพิ่ม'], bad:['st-fix','ไม่พบสังกัดในระบบ'], doc:['st-approved','ไม่พบใน ศธ.02 · แนบหนังสือรับรอง']};
+  var uw = S.ureq.filter(function(u){ return u.status==='wait'; }).length;
+  return '<div class="pagehead"><div><h2>บัญชีและคำขอผู้ใช้</h2>'+
+   '<p class="ph-sub">ใบสมัครรอยืนยัน '+waiting.length+' รายการ · คำขอแก้ไขข้อมูลรอพิจารณา '+uw+' รายการ</p></div></div>'+
+   '<h3 style="font-size:17px;margin:0 0 10px">ยืนยันบัญชีสมาชิกใหม่</h3>'+
+   errSummary()+
+   '<div class="tw"><table><thead><tr><th>ผู้สมัคร</th><th>อีเมล</th><th>สถานศึกษาที่แจ้ง</th><th>ผลตรวจอัตโนมัติ</th><th>การดำเนินการ</th></tr></thead><tbody>'+
+   S.acct.map(function(a){
+     var c = chk[a.check];
+     var act = a.status==='wait'
+       ? '<button class="btn sm ok" type="button" data-act="acctok" data-a="'+a.id+'">อนุมัติ</button> '+
+         '<button class="btn sm bad" type="button" data-act="acctno" data-a="'+a.id+'">ปฏิเสธ</button>'
+       : (a.status==='ok' ? '<span class="pill st-published">เปิดใช้งานแล้ว</span>' : '<span class="pill st-fix">ปฏิเสธแล้ว</span>');
+     return '<tr><td><b>'+h(a.name)+'</b><br>'+h(a.pos)+
+       (a.doc ? '<br><span style="font-size:11.5px;color:var(--brand-2)">📄 '+h(a.doc)+'</span>' : '')+
+       '</td><td class="num">'+h(a.email)+'</td><td>'+h(a.inst)+'</td>'+
+       '<td><span class="pill '+c[0]+'">'+h(c[1])+'</span></td><td>'+act+'</td></tr>';
+   }).join('')+'</tbody></table></div>'+
+   '<div class="card"><h3>เหตุผลกรณีปฏิเสธ</h3>'+
+    '<div class="field'+(S.errs.acctReason?' bad':'')+'"><label for="f_acctReason">ระบุเหตุผลที่แจ้งกลับผู้สมัคร</label>'+
+    '<textarea id="f_acctReason" data-f="acctReason" style="min-height:74px" placeholder="เช่น ไม่พบชื่อท่านในฐานข้อมูลบุคลากรของสถานศึกษาที่แจ้ง">'+h(S.acctReason)+'</textarea>'+
+    (S.errs.acctReason?'<div class="err" role="alert">'+h(S.errs.acctReason)+'</div>'
+      :'<div class="hint">จำเป็นเมื่อกดปฏิเสธ ไม่จำเป็นเมื่อกดอนุมัติ ผู้สมัครจะได้รับเหตุผลนี้ทางอีเมล</div>')+'</div></div>'+
+   '<div class="alert i"><b>เงื่อนไขการอนุมัติอัตโนมัติ</b> · อนุมัติทันทีเมื่อโดเมนอีเมลตรงกับสถานศึกษาที่เลือก กรณีอื่นเข้าคิวให้ตรวจสอบด้วยตนเอง</div>'+
+
+   '<h3 style="font-size:17px;margin:20px 0 10px">คำขอแก้ไขข้อมูลผู้ใช้</h3>'+
+   '<div class="tw"><table><thead><tr><th>ผู้ยื่นคำขอ</th><th>ประเภทคำขอ</th><th>รายละเอียด</th><th>สถานะ</th><th></th></tr></thead><tbody>'+
+   (S.ureq.length ? S.ureq.map(function(u){
+     return '<tr><td><b>'+h(u.who)+'</b><br>'+h(u.inst)+'</td><td>'+h(u.kind)+'</td><td>'+h(u.detail)+'</td>'+
+       '<td>'+(u.status==='wait'?'<span class="pill st-wait">รอพิจารณา</span>':
+               (u.status==='ok'?'<span class="pill st-published">ดำเนินการแล้ว</span>':'<span class="pill st-fix">ปฏิเสธ</span>'))+'</td>'+
+       '<td>'+(u.status==='wait'
+         ? '<button class="btn sm ok" type="button" data-act="ureqok" data-a="'+u.id+'">อนุมัติ</button> '+
+           '<button class="btn sm bad" type="button" data-act="ureqno" data-a="'+u.id+'">ปฏิเสธ</button>'
+         : '—')+'</td></tr>';
+   }).join('') : '<tr><td colspan="5">ไม่มีคำขอรอพิจารณา</td></tr>')+
+   '</tbody></table></div>'+
+   '<div class="card"><h3>ช่วยเหลือผู้ใช้</h3>'+
+     '<p style="font-size:13px;color:var(--ink-2);margin-bottom:10px">ใช้เมื่อผู้ใช้ติดปัญหาเข้าระบบไม่ได้ '+
+     'ระบบจะส่งลิงก์ตั้งรหัสผ่านใหม่ไปยังอีเมลของผู้ใช้ เจ้าหน้าที่ไม่เห็นรหัสผ่าน</p>'+
+     '<div class="btnrow"><button class="btn" type="button" data-act="pwreset">ส่งลิงก์ตั้งรหัสผ่านใหม่ให้ผู้ใช้</button>'+
+     '<button class="btn" type="button" data-act="noop">แก้ไขชื่อที่สะกดผิด</button></div></div>'+
+   (S.role==='adm'
+     ? '<div class="alert w"><b>ขอบเขตสิทธิ์ของเจ้าหน้าที่</b> · เจ้าหน้าที่ยืนยันบัญชีและอนุมัติคำขอแก้ไขข้อมูลได้ '+
+       'แต่ไม่สามารถเปลี่ยนกลุ่มสิทธิ์ของผู้ใช้ หรือเลื่อนบัญชีใดเป็นเจ้าหน้าที่หรือผู้ดูแลระบบได้ '+
+       'สิทธิ์ดังกล่าวสงวนไว้สำหรับผู้ดูแลระบบเท่านั้น เพื่อรักษาหลักการแบ่งแยกหน้าที่</div>'
+     : '<div class="alert i">หน้านี้ใช้ร่วมกับเจ้าหน้าที่ สอศ. เพื่อลดคอขวดจากการรอผู้ดูแลระบบ '+
+       'แต่การเปลี่ยนกลุ่มสิทธิ์ยังสงวนไว้ที่ผู้ดูแลระบบเท่านั้น</div>');
+};
+
+SC['s.master'] = function(){
+  var rows = [['รายชื่อสถานศึกษาสังกัด สอศ.','429','สมัครสมาชิก · ส่งผลงาน · ตัวกรองการค้นหา'],
+   ['สถาบันการอาชีวศึกษา','23','ตัวกรองการค้นหา · รายงาน'],
+   ['ประเภทวิชาและสาขาวิชา',Object.keys(SUBJECTS).length+' / '+Object.keys(SUBJECTS).reduce(function(a,k){return a+SUBJECTS[k].length;},0),'ส่งผลงาน · ตัวกรองการค้นหา'],
+   ['ประเภททุนของ สอศ.',FUNDS.length,'ส่งผลงาน · รายงาน'],
+   ['ปีงบประมาณ','2565–2569','ทุกหน้าจอที่อ้างอิงปี'],
+   ['บัญชีคำศัพท์ควบคุม',VOCAB.length,'ส่งผลงาน · จัดหมวดหมู่ · การค้นหา'],
+   ['รายการเมทาดาทาและเกณฑ์การลงรายการ','27','ส่งผลงาน · หน้ารายละเอียด · การส่งออก']];
+  return '<div class="pagehead"><div><h2>ข้อมูลหลักของระบบ</h2><p class="ph-sub">แหล่งอ้างอิงกลางของรายการตัวเลือกทุกช่องในระบบ</p></div></div>'+
+   '<div class="tw"><table><thead><tr><th>ชุดข้อมูล</th><th>จำนวนรายการ</th><th>ใช้ในหน้าจอ</th><th></th></tr></thead><tbody>'+
+   rows.map(function(r){ return '<tr><td><b>'+h(r[0])+'</b></td><td class="num">'+h(r[1])+'</td><td>'+h(r[2])+'</td>'+
+     '<td><button class="btn sm" type="button" data-act="noop">จัดการ</button></td></tr>'; }).join('')+
+   '</tbody></table></div>'+
+   '<div class="alert w">การลบรายการที่ถูกอ้างอิงอยู่จะถูกปฏิเสธ ระบบจะเสนอให้ปิดการใช้งานรายการนั้นแทน เพื่อไม่ให้ข้อมูลผลงานเดิมเสียหาย</div>';
+};
+SC['s.settings'] = function(){
+  return '<div class="pagehead"><div><h2>ตั้งค่าและความมั่นคงของข้อมูล</h2><p class="ph-sub">นโยบายการจัดเก็บและการสำรองข้อมูล</p></div></div>'+
+   '<div class="card"><h3>นโยบายการจัดเก็บข้อมูล</h3>'+
+    '<div class="sw"><div><div class="tt">เก็บผลงานถาวร ไม่ลบเมื่อขึ้นปีงบประมาณใหม่</div><div class="ts">แทนที่นโยบายเดิมที่ลบข้อมูลย้อนหลังทุก 3 ปี</div></div><input type="checkbox" checked></div>'+
+    '<div class="sw"><div><div class="tt">สำรองข้อมูลอัตโนมัติทุกวัน เวลา 02:00 น.</div><div class="ts">เก็บสำเนา 30 วันย้อนหลัง และสำเนารายเดือน 24 เดือน</div></div><input type="checkbox" checked></div>'+
+    '<div class="sw"><div><div class="tt">เก็บประวัติการแก้ไขทุกรุ่นของผลงาน</div><div class="ts">ย้อนดูและกู้คืนรุ่นก่อนหน้าได้</div></div><input type="checkbox" checked></div>'+
+   '</div>'+
+   '<div class="tiles">'+tile('สำรองข้อมูลล่าสุด','สำเร็จ','g')+tile('ขนาดข้อมูลรวม','148 GB')+tile('จุดกู้คืนที่ใช้ได้','54')+'</div>'+
+   '<div class="btnrow"><button class="btn" type="button" data-act="backup">สำรองข้อมูลทันที</button>'+
+   '<button class="btn bad" type="button" data-act="restore">กู้คืนจากจุดสำรอง</button></div>';
+};
+SC['s.log'] = function(){
+  var rows = S.log.length ? S.log : [{t:'—',who:'ระบบ',act:'ยังไม่มีการดำเนินการในรอบนี้ ลองทดลองอนุมัติหรือเผยแพร่ผลงานดู',ref:'—'}];
+  return '<div class="pagehead"><div><h2>บันทึกการใช้งานระบบ</h2><p class="ph-sub">บันทึกทุกการกระทำที่เกิดขึ้นจริงในต้นแบบนี้ ใช้ทดสอบการตรวจสอบย้อนกลับ</p></div></div>'+
+   '<div class="tw"><table><thead><tr><th>เวลา</th><th>ผู้ใช้</th><th>การกระทำ</th><th>รายการที่เกี่ยวข้อง</th></tr></thead><tbody>'+
+   rows.map(function(l){ return '<tr><td class="num">'+h(l.t)+'</td><td>'+h(l.who)+'</td><td>'+h(l.act)+'</td><td class="num">'+h(l.ref)+'</td></tr>'; }).join('')+
+   '</tbody></table></div>';
+};
+
+/* ============ เรนเดอร์ ============ */
+function shell(inner){
+  var nav = NAV[S.role].map(function(n){
+    var c = n.c ? n.c() : 0;
+    return '<button class="nv" type="button" data-act="go" data-a="'+n.s+'"'+(S.screen===n.s?' aria-current="page"':'')+'>'+
+      '<span>'+h(n.t)+'</span>'+(c?'<span class="cnt">'+c+'</span>':'')+'</button>';
+  }).join('');
+  var roles = ['guest','res','adm','sup'].map(function(r){
+    return '<button type="button" data-act="role" data-a="'+r+'" aria-pressed="'+(S.role===r)+'">'+h(ROLE_NAME[r])+'</button>'; }).join('');
+  return '<div class="top"><button class="lg" type="button" style="background:none;border:0;color:inherit;padding:0" data-act="go" data-a="'+ROLE_HOME[S.role]+'">'+
+      '<img class="sq" src="'+LOGO+'" width="120" height="120" alt="ตราสัญลักษณ์สำนักงานคณะกรรมการการอาชีวศึกษา"><span class="nm sysname" style="text-align:left"><span class="w">ต้นแบบ</span><wbr><span class="w">ระบบ</span><wbr><span class="w">สารสนเทศ</span><wbr><span class="w">งานวิจัย</span><wbr><span class="w">และ</span><wbr><span class="w">นวัตกรรม</span><wbr><span class="w">อาชีวศึกษา</span><span>'+h(WHO[S.role])+'</span></span></button>'+
+      '<div class="sp"></div><div class="roleswap" role="group" aria-labelledby="rswlb">'+
+      '<span class="lb" id="rswlb">เลือกบทบาทผู้ใช้งานที่ต้องการ</span>'+roles+
+      '<button class="rinfo" type="button" data-act="go" data-a="g.roles"'+(S.screen==='g.roles'?' aria-current="page"':'')+'>'+
+      'อธิบายสิทธิ์ผู้ใช้ทั้ง 4 กลุ่มของระบบ</button></div></div>'+
+    '<div class="body"><nav class="side" aria-label="เมนู'+h(ROLE_NAME[S.role])+'">'+
+      '<div class="sec">'+h(ROLE_NAME[S.role])+'</div>'+nav+'</nav>'+
+      '<main class="main">'+inner+'</main></div>'+
+    '<div class="foot">ต้นแบบระบบสารสนเทศงานวิจัยและนวัตกรรมอาชีวศึกษา · การศึกษาค้นคว้าอิสระ สาขาวิชาสารสนเทศศึกษา คณะมนุษยศาสตร์ มหาวิทยาลัยศรีนครินทรวิโรฒ</div>';
+}
+function render(){
+  var fn = SC[S.screen] || SC['g.home'];
+  app.innerHTML = shell(fn());
+  if(Object.keys(S.errs).length){ var e = $('errsum'); if(e) e.focus(); }
+  window.scrollTo({top:0, behavior:'instant'});
+}
+function go(s){ S.screen = s; S.errs = {}; if(s!=='g.register'){ S.v02 = null; S.v02file = null; } render(); }
+
+/* ============ ตรรกะการทำงาน ============ */
+function validateStep(){
+  S.errs = {}; var f = S.form;
+  if(S.step===1){
+    if(!f.title.trim()) S.errs.title = 'ยังไม่ได้กรอกชื่อผลงาน';
+    if(!f.type) S.errs.type = 'ยังไม่ได้เลือกประเภทผลงาน';
+    if(!f.fund) S.errs.fund = 'ยังไม่ได้เลือกประเภททุน';
+    if(!f.year) S.errs.year = 'ยังไม่ได้เลือกปีงบประมาณที่ได้รับทุน';
+    if(!f.yearDone) S.errs.yearDone = 'ยังไม่ได้เลือกปีที่ดำเนินการแล้วเสร็จ';
+    else if(f.year && f.yearDone && f.yearDone < f.year) S.errs.yearDone = 'ปีที่แล้วเสร็จต้องไม่น้อยกว่าปีที่ได้รับทุน';
+    if(!f.cat) S.errs.cat = 'ยังไม่ได้เลือกประเภทวิชา';
+    if(!f.major) S.errs.major = 'ยังไม่ได้เลือกสาขาวิชา';
+    if(!f.target.trim()) S.errs.target = 'ยังไม่ได้ระบุกลุ่มเป้าหมาย';
+    var L = (f.abstract||'').trim().length;
+    if(L===0) S.errs.abstract = 'ยังไม่ได้กรอกบทคัดย่อ';
+    else if(L<250) S.errs.abstract = 'บทคัดย่อสั้นเกินไป ขณะนี้ '+L+' ตัวอักษร ต้องไม่น้อยกว่า 250 ตัวอักษร เพื่อให้ค้นหาเจอด้วยคำสำคัญ';
+    if(f.kw.length<3) S.errs.kw = 'เลือกคำสำคัญอย่างน้อย 3 คำ ขณะนี้เลือกแล้ว '+f.kw.length+' คำ';
+  } else if(S.step===2){
+    var miss = [];
+    if(!f.files.full) miss.push('รายงานวิจัยฉบับสมบูรณ์');
+    if(!f.files.abs) miss.push('บทคัดย่อ (ไทย–อังกฤษ)');
+    if(!f.files.img) miss.push('ภาพผลงาน');
+    if(miss.length) S.errs.files = 'ยังไม่ได้แนบเอกสารบังคับ ได้แก่ '+miss.join(', ');
+  } else if(S.step===4){
+    if(!f.confirm) S.errs.confirm = 'ต้องติ๊กยืนยันว่าตรวจทานข้อมูลครบถ้วนแล้วก่อนจึงจะส่งได้';
+  }
+  return Object.keys(S.errs).length===0;
+}
+function formToRec(){
+  var f = S.form;
+  var r = f.id ? rec(f.id) : null;
+  if(!r){ r = {id:'VEC-'+f.year+'-NEW-'+String(Math.floor(Math.random()*900)+100), owner:ME, hist:[]}; S.recs.unshift(r); }
+  ['title','titleEn','type','fund','year','yearDone','cat','major','inst','lead','co','level','target','area','abstract'].forEach(function(k){ r[k]=f[k]; });
+  r.kw = f.kw.slice(); r.files = {full:f.files.full,abs:f.files.abs,img:f.files.img};
+  r.consent = {pub:f.consent.pub,req:f.consent.req,contact:f.consent.contact,hold:f.consent.hold};
+  if(!r.hist) r.hist=[];
+  return r;
+}
+
+document.addEventListener('input', function(e){
+  var t = e.target; var k = t.getAttribute && t.getAttribute('data-f');
+  if(!k || t.type==='checkbox') return;
+  if(k==='q'){ S.q = t.value; return; }
+  if(k==='fb'){ S.feedbackDraft = t.value; return; }
+  if(k==='acctReason'){ S.acctReason = t.value; return; }
+  if(!S.form) S.form = {};
+  if(S.form.hasOwnProperty('abstract') && k==='abstract'){
+    S.form.abstract = t.value;
+    var c = $('c_abstract'); if(c){ var L=t.value.length; c.textContent = L+' / 250 ตัวอักษรขั้นต่ำ'; c.className = 'cnt'+(L<250?' bad':''); }
+    return;
+  }
+  S.form[k] = t.value;
+  if(k.indexOf('rg_')===0 && S.v02 && S.v02!=='loading' && S.v02!=='alt' && S.v02!=='sent'){ S.v02=null; render(); }
+});
+document.addEventListener('change', function(e){
+  var t = e.target;
+  if(t.getAttribute && t.getAttribute('data-doc')){
+    var fl = t.files && t.files[0];
+    if(fl){ var mb = fl.size/1048576;
+      if(mb > 10){ S.v02file=null; S.errs.rg_doc='ไฟล์ใหญ่เกิน 10 MB กรุณาลดขนาดไฟล์ก่อน'; }
+      else { S.v02file = {name: fl.name, size: (mb<0.1 ? Math.max(1,Math.round(fl.size/1024))+' KB' : mb.toFixed(1)+' MB')}; delete S.errs.rg_doc; }
+      render(); }
+    return;
+  }
+  var k = t.getAttribute && t.getAttribute('data-f');
+  if(k==='kwsel' && t.value){ if(S.form.kw.indexOf(t.value)<0) S.form.kw.push(t.value); delete S.errs.kw; render(); return; }
+  if(k==='cat'){ S.form.cat = t.value; S.form.major=''; render(); return; }
+  if(k==='ftsw'){ S.ft = t.checked; render(); return; }
+  if(k==='rg_ok'||k==='confirm'){ if(!S.form) S.form={}; S.form[k]=t.checked; return; }
+  if(k){ if(!S.form) S.form={}; S.form[k]=t.value; return; }
+  var fk = t.getAttribute && t.getAttribute('data-file');
+  if(fk){ S.form.files[fk] = t.checked; delete S.errs.files; render(); return; }
+  var ck = t.getAttribute && t.getAttribute('data-consent');
+  if(ck){ S.form.consent[ck] = t.checked; return; }
+  var cc = t.getAttribute && t.getAttribute('data-ck');
+  if(cc){ S.checks[cc] = t.checked; render(); return; }
+});
+
+document.addEventListener('click', function(e){
+  var b = e.target.closest ? e.target.closest('[data-act]') : null;
+  if(!b) return;
+  var act = b.getAttribute('data-act'), a = b.getAttribute('data-a');
+  var r;
+  switch(act){
+    case 'go': S.cur = null; go(a); break;
+    case 'noop': toast('ต้นแบบนี้ยังไม่ได้จำลองหน้าจอย่อยส่วนนี้'); break;
+    case 'role':
+      S.role = a; S.cur=null; S.form=null; S.step=1; S.errs={}; go(ROLE_HOME[a]);
+      toast('สลับเป็นมุมมอง '+ROLE_NAME[a]+' แล้ว'); break;
+    case 'search': S.screen='g.search'; render(); break;
+    case 'ftype': S.fType = (S.fType===a?'':a); render(); break;
+    case 'fyear': S.fYear = (S.fYear===a?'':a); render(); break;
+    case 'kwq':
+      S.q = a; S.fType=''; S.fYear=''; S.fInst=''; S.fCat=''; S.fRegion=''; S.fSrc='';
+      go('g.search'); toast('ค้นหาด้วยคำสำคัญ "'+a+'"'); break;
+    case 'clearf': S.q=''; S.fType=''; S.fYear=''; S.fInst=''; S.fCat=''; S.fRegion=''; S.fSrc='';
+      render(); toast('ล้างตัวกรองทั้งหมดแล้ว'); break;
+    case 'rmfilter':
+      if(a==='q') S.q=''; if(a==='ftype') S.fType=''; if(a==='fyear') S.fYear='';
+      if(a==='finst') S.fInst=''; if(a==='fcat') S.fCat=''; if(a==='fregion') S.fRegion=''; if(a==='fsrc') S.fSrc='';
+      render(); break;
+    case 'bdim': S.bdim = a; render(); break;
+    case 'btype': S.fType=a; S.fInst=''; S.fRegion=''; go('g.search'); break;
+    case 'binst': S.fInst=a; S.fRegion=''; go('g.search'); break;
+    case 'bregion': S.fRegion=a; S.fInst=''; go('g.search'); break;
+    case 'bsrc': S.fSrc=a; go('g.search'); break;
+    case 'bcat': S.fCat=a; go('g.search'); break;
+    case 'byear': S.fYear=a; go('g.search'); break;
+    case 'advtoggle': S.adv = !S.adv; S.errs={}; render();
+      if(S.adv){ var ab=$('advbox'); if(ab&&ab.scrollIntoView) ab.scrollIntoView({block:'nearest'}); } break;
+    case 'advopen': S.adv = true; S.errs={}; go('g.search'); break;
+    case 'advclear': S.form={}; S.errs={};
+      S.q=''; S.fType=''; S.fYear=''; S.fInst=''; S.fCat=''; S.fRegion=''; S.fSrc='';
+      render(); toast('ล้างเงื่อนไขแล้ว'); break;
+    case 'advsearch':
+      S.errs={}; var af = S.form||{};
+      var any = ['ad_title','ad_kw','ad_inst','ad_cat','ad_type','ad_year','ad_src'].some(function(k){ return af[k]; });
+      if(!any){ S.errs.ad_title = 'ต้องระบุอย่างน้อยหนึ่งเงื่อนไข มิฉะนั้นจะได้ผลลัพธ์ทั้งหมดซึ่งไม่ต่างจากการดูผลงานทั้งหมด';
+        render(); toast('ยังค้นไม่ได้ ต้องระบุอย่างน้อยหนึ่งเงื่อนไข','b'); break; }
+      S.q = af.ad_title || af.ad_kw || '';
+      S.fType = af.ad_type || ''; S.fYear = af.ad_year || '';
+      S.fInst = af.ad_inst || ''; S.fCat = af.ad_cat || ''; S.fRegion = ''; S.fSrc = af.ad_src || '';
+      S.adv = true; go('g.search'); break;
+    case 'open': S.cur=a; if(!S.vmore) S.vmore={}; S.vmore[a]=(S.vmore[a]||0)+1; save(); go('g.detail'); break;
+    case 'track': S.cur=a; go('r.status'); break;
+    case 'dl': toast('ดาวน์โหลดเอกสารของ '+a+' (ต้นแบบจำลอง ไม่มีไฟล์จริง)','g'); break;
+    case 'askdoc':
+      S.reqs.unshift({id:'RQ-'+Math.floor(Math.random()*900+100), by:ME, inst:MY_INST, rec:a, purpose:'อ้างอิงในงานวิจัยของตนเอง', status:'wait'});
+      logit(ME,'ยื่นขอเอกสารฉบับเต็ม',a); save();
+      toast('ส่งคำขอแล้ว เจ้าหน้าที่จะพิจารณาภายใน 3 วันทำการ','g'); render(); break;
+
+    case 'register':
+      S.errs = {}; var f = S.form||{};
+      if(!f.rg_name) S.errs.rg_name='ยังไม่ได้กรอกชื่อ–นามสกุล';
+      if(!f.rg_email) S.errs.rg_email='ยังไม่ได้กรอกอีเมลหน่วยงาน';
+      else if(f.rg_email.indexOf('@')<0) S.errs.rg_email='รูปแบบอีเมลไม่ถูกต้อง ต้องมีเครื่องหมาย @ เช่น ชื่อ@วิทยาลัย.ac.th';
+      if(!f.rg_inst) S.errs.rg_inst='ยังไม่ได้เลือกสถานศึกษาต้นสังกัด';
+      if(!f.rg_pos) S.errs.rg_pos='ยังไม่ได้กรอกตำแหน่ง';
+      if(!f.rg_ok) S.errs.rg_ok='ต้องยอมรับเงื่อนไขการใช้งานก่อนจึงจะสมัครได้';
+      if(Object.keys(S.errs).length){ S.v02=null; render(); break; }
+      S.v02 = 'loading'; render();
+      setTimeout(function(){
+        if(S.screen!=='g.register' || S.v02!=='loading') return;
+        var em = ((S.form&&S.form.rg_email)||'').toLowerCase();
+        S.v02 = /\.ac\.th$/.test(em.split('@')[1]||'') ? 'ok' : 'fail';
+        render();
+      }, 2200);
+      break;
+    case 'v02alt': S.v02='alt'; S.errs={}; render(); break;
+    case 'v02back': S.v02='fail'; S.v02file=null; S.errs={}; render(); break;
+    case 'regalt':
+      S.errs = {};
+      if(!S.v02file){ S.errs.rg_doc='ยังไม่ได้เลือกไฟล์หนังสือรับรอง'; render(); break; }
+      var af = S.form||{};
+      S.acct.unshift({id:'AC-'+(S.acct.length+1), name:af.rg_name, pos:af.rg_pos, email:af.rg_email,
+        inst:af.rg_inst, check:'doc', doc:S.v02file.name, status:'wait'});
+      save(); S.v02='sent'; S.v02file=null; render();
+      toast('ส่งคำขอพร้อมหนังสือรับรองแล้ว รอเจ้าหน้าที่ตรวจสอบ','g');
+      break;
+    case 'regsend':
+      toast('ส่งใบสมัครแล้ว บัญชีจะใช้งานได้หลังเจ้าหน้าที่ตรวจสอบสังกัด','g');
+      S.form=null; S.v02=null; go('g.home');
+      break;
+    case 'login':
+      S.errs={}; var lf = S.form||{};
+      if(!lf.lg_email) S.errs.lg_email='ยังไม่ได้กรอกอีเมล';
+      if(!lf.lg_pw) S.errs.lg_pw='ยังไม่ได้กรอกรหัสผ่าน';
+      if(Object.keys(S.errs).length){ render(); }
+      else { S.form=null; S.role='res'; go('r.home'); toast('เข้าสู่ระบบในมุมมองนักวิจัยแล้ว','g'); }
+      break;
+
+    case 'newsubmit': S.form = blankForm(); S.step=1; S.errs={}; go('r.submit'); break;
+    case 'edit':
+      r = rec(a); S.form = {
+        id:r.id,title:r.title,titleEn:r.titleEn,type:r.type,fund:r.fund,year:r.year,yearDone:r.yearDone,
+        cat:r.cat,major:r.major,inst:r.inst,lead:r.lead,co:r.co,level:r.level,target:r.target,area:r.area,
+        abstract:r.abstract, kw:(r.kw||[]).slice(),
+        files:{full:r.files.full,abs:r.files.abs,img:r.files.img},
+        consent:{pub:r.consent.pub,req:r.consent.req,contact:r.consent.contact,hold:r.consent.hold},
+        editing:(r.status==='fix')
+      };
+      S.step=1; S.errs={}; go('r.submit'); break;
+    case 'next':
+      if(validateStep()){ S.step++; S.errs={}; render(); }
+      else { render(); toast('ยังไปขั้นถัดไปไม่ได้ ระบบพบข้อมูลที่ต้องแก้','b'); }
+      break;
+    case 'prev': S.step = Math.max(1, S.step-1); S.errs={}; render(); break;
+    case 'draft':
+      if(!S.form.title.trim()){ S.errs.title='ต้องมีชื่อผลงานอย่างน้อย จึงจะบันทึกร่างได้'; render(); break; }
+      r = formToRec(); if(r.status!=='fix') r.status='draft'; save();
+      toast('บันทึกร่างแล้ว กลับมากรอกต่อได้จากคลังผลงานของฉัน','g'); break;
+    case 'cancelform':
+      modal('ออกจากการกรอกข้อมูล',
+        'ข้อมูลที่กรอกไว้จะหายไปทั้งหมด หากยังไม่พร้อมส่ง สามารถกดยกเลิกแล้วเลือก <b>บันทึกร่าง</b> เพื่อเก็บไว้กรอกต่อภายหลังได้',
+        'ออกโดยไม่บันทึก', function(){ S.form=null; S.step=1; S.errs={}; go('r.portfolio'); toast('ออกจากแบบฟอร์มแล้ว ไม่ได้บันทึกข้อมูล'); }, 'กลับไปกรอกต่อ');
+      break;
+    case 'submitrec':
+      if(!validateStep()){ render(); toast('ยังส่งไม่ได้ ต้องยืนยันการตรวจทานก่อน','b'); break; }
+      var badStep = 0;
+      for(var st=1; st<=2; st++){ S.step = st; if(!validateStep()){ badStep = st; break; } }
+      if(badStep){ S.step = badStep; render(); toast('พบข้อมูลไม่ครบในขั้นที่ '+badStep+' ระบบพากลับไปแก้ให้แล้ว','b'); break; }
+      S.step = 4; S.errs = {};
+      r = formToRec(); var wasFix = (r.status==='fix');
+      r.status='wait'; r.feedback=null; r.due=null;
+      r.hist = (r.hist||[]).concat([{d:nowStr(), t:(wasFix?'นักวิจัยแก้ไขและส่งกลับ':'ส่งผลงานเข้าระบบ')}]);
+      logit(ME, wasFix?'แก้ไขและส่งผลงานกลับ':'ส่งผลงานเข้าระบบ', r.id); save();
+      S.form=null; S.step=1; go('r.status');
+      toast(wasFix?'ส่งกลับให้เจ้าหน้าที่แล้ว ติดตามสถานะได้จากหน้านี้':'ส่งผลงานเข้าระบบแล้ว สถานะเปลี่ยนเป็น รอตรวจสอบ','g');
+      break;
+
+    case 'util': S.cur=a; S.form={}; go('r.util'); break;
+    case 'addorg':
+      var ff = S.form||{};
+      if(!ff.uo_n || !ff.uo_u || !ff.uo_y){ toast('กรอกชื่อหน่วยงาน ลักษณะการนำไปใช้ และปี ให้ครบก่อน','b'); break; }
+      r = rec(S.cur); if(!r.util) r.util = {orgs:[],people:'',ip:'',ipno:'',awards:0};
+      r.util.orgs.push({n:ff.uo_n,u:ff.uo_u,y:ff.uo_y});
+      S.form.uo_n=''; S.form.uo_u=''; S.form.uo_y=''; logit(ME,'เพิ่มหน่วยงานที่นำผลงานไปใช้',r.id); save();
+      render(); toast('เพิ่มหน่วยงานแล้ว','g'); break;
+    case 'rmorg':
+      r = rec(S.cur); var idx = parseInt(a,10); var removed = r.util.orgs[idx];
+      modal('ลบรายการนี้ออก', 'จะลบ <b>'+h(removed.n)+'</b> ออกจากรายการหน่วยงานที่นำผลงานไปใช้', 'ลบออก', function(){
+        r.util.orgs.splice(idx,1); save(); render();
+        toast('ลบแล้ว', null, 'เลิกทำ', function(){ r.util.orgs.splice(idx,0,removed); save(); render(); toast('คืนรายการกลับแล้ว','g'); });
+      }); break;
+    case 'saveutil':
+      r = rec(S.cur); if(!r.util) r.util={orgs:[],people:'',ip:'',ipno:'',awards:0};
+      var uf = S.form||{};
+      if(uf.u_people!=null) r.util.people = uf.u_people;
+      if(uf.u_ip) r.util.ip = uf.u_ip;
+      if(uf.u_ipno!=null) r.util.ipno = uf.u_ipno;
+      logit(ME,'อัปเดตผลการใช้ประโยชน์',r.id); save();
+      toast('บันทึกผลการใช้ประโยชน์แล้ว','g'); go('r.portfolio'); break;
+    case 'saveprofile': toast('บันทึกข้อมูลส่วนตัวแล้ว','g'); break;
+    case 'movereq':
+      S.ureq.unshift({id:'UR-'+Math.floor(Math.random()*900+100), who:ME, inst:MY_INST, kind:'ย้ายสังกัด',
+        detail:'ยื่นคำขอย้ายสังกัดจากหน้าข้อมูลส่วนตัว', status:'wait'});
+      logit(ME,'ยื่นคำขอย้ายสังกัด',MY_INST); save(); render();
+      toast('ส่งคำขอย้ายสังกัดแล้ว เจ้าหน้าที่จะพิจารณาภายใน 3 วันทำการ','g'); break;
+
+    case 'review': S.cur=a; S.checks={}; S.feedbackDraft=''; S.errs={}; go('a.review'); break;
+    case 'approve':
+      r = rec(a);
+      var unticked = 7 - Object.keys(S.checks).filter(function(k){return S.checks[k];}).length;
+      var doApprove = function(){
+        var prev = r.status; r.status='approved';
+        r.hist = (r.hist||[]).concat([{d:nowStr(), t:'เจ้าหน้าที่อนุมัติ โดย อรสิริ'}]);
+        if(r.owner===ME) notify('ผลงานของท่านผ่านการอนุมัติแล้ว รอเจ้าหน้าที่จัดหมวดหมู่และเผยแพร่', r.id);
+        logit('อรสิริ (เจ้าหน้าที่ สอศ.)','อนุมัติผลงาน',r.id); save(); go('a.queue');
+        toast('อนุมัติแล้ว ผลงานย้ายไปรายการรอเผยแพร่', 'g', 'เลิกทำ', function(){
+          r.status=prev; r.hist.pop(); if(r.owner===ME) S.notes.shift();
+          save(); render(); toast('ยกเลิกการอนุมัติแล้ว ผลงานกลับไปอยู่ในรายการรอตรวจสอบ'); });
+      };
+      if(unticked>0){
+        modal('ยังตรวจไม่ครบทุกข้อ',
+          'รายการตรวจความครบถ้วนยังเหลืออีก <b>'+unticked+' ข้อ</b> ที่ยังไม่ได้ทำเครื่องหมาย การอนุมัติทั้งที่ตรวจไม่ครบจะถูกบันทึกไว้ในบันทึกการใช้งานระบบ',
+          'ยืนยันอนุมัติ', doApprove, 'กลับไปตรวจต่อ');
+      } else { doApprove(); }
+      break;
+    case 'sendback':
+      r = rec(a); S.errs={};
+      if(!S.feedbackDraft.trim()){ S.errs.fb='ต้องระบุข้อเสนอแนะก่อนส่งกลับ มิฉะนั้นนักวิจัยจะไม่ทราบว่าต้องแก้อะไร'; render();
+        toast('ยังส่งกลับไม่ได้ ต้องระบุข้อเสนอแนะ','b'); break; }
+      r.status='fix'; r.feedback = S.feedbackDraft.split('\n').filter(function(x){return x.trim();});
+      r.due = '30 ก.ย. 2569';
+      r.hist = (r.hist||[]).concat([{d:nowStr(), t:'ส่งกลับให้แก้ไข โดย อรสิริ'}]);
+      if(r.owner===ME) notify('ผลงานของท่านถูกส่งกลับเพื่อแก้ไข มีข้อเสนอแนะ '+r.feedback.length+' ข้อ', r.id);
+      logit('อรสิริ (เจ้าหน้าที่ สอศ.)','ส่งกลับให้แก้ไข',r.id); save(); S.feedbackDraft='';
+      go('a.queue'); toast('ส่งกลับให้นักวิจัยแล้ว พร้อมข้อเสนอแนะ '+r.feedback.length+' ข้อ','g'); break;
+
+    case 'pubopen': S.cur=a; S.form={}; S.errs={}; go('a.publish'); break;
+    case 'publish':
+      r = rec(a); S.errs={};
+      var pf = S.form||{};
+      if(!pf.pb_strat) S.errs.pb_strat='ยังไม่ได้เลือกหมวดหมู่ตามยุทธศาสตร์';
+      if(!pf.pb_group) S.errs.pb_group='ยังไม่ได้เลือกกลุ่มเป้าหมายผู้ใช้ประโยชน์';
+      if(Object.keys(S.errs).length){ render(); toast('ยังเผยแพร่ไม่ได้ ต้องจัดหมวดหมู่ให้ครบก่อน','b'); break; }
+      modal('ยืนยันการเผยแพร่',
+        'เมื่อเผยแพร่แล้ว ผลงานนี้จะค้นพบได้จากหน้าสืบค้นสาธารณะทันที และข้อมูลย่อจะเปิดเผยต่อบุคคลทั่วไป',
+        'เผยแพร่', function(){
+          var prev2 = r.status; r.status='published';
+          r.hist = (r.hist||[]).concat([{d:nowStr(), t:'เผยแพร่บนระบบ โดย อรสิริ'}]);
+          if(r.owner===ME) notify('ผลงานของท่านเผยแพร่บนระบบแล้ว ค้นพบได้จากหน้าสืบค้นสาธารณะ', r.id);
+          logit('อรสิริ (เจ้าหน้าที่ สอศ.)','เผยแพร่ผลงาน',r.id); save(); go('a.publishq');
+          toast('เผยแพร่แล้ว ลองสลับไปมุมมองบุคคลทั่วไปแล้วค้นหาดูได้เลย','g','เลิกทำ',function(){
+            r.status=prev2; r.hist.pop(); if(r.owner===ME) S.notes.shift();
+            save(); render(); toast('ถอนการเผยแพร่แล้ว'); });
+        }); break;
+    case 'unapprove':
+      r = rec(a);
+      modal('ถอนการอนุมัติ','ผลงานจะกลับไปอยู่ในรายการรอตรวจสอบ และเจ้าหน้าที่ต้องพิจารณาใหม่อีกครั้ง','ถอนการอนุมัติ', function(){
+        r.status='wait'; logit('อรสิริ (เจ้าหน้าที่ สอศ.)','ถอนการอนุมัติ',r.id); save(); go('a.publishq');
+        toast('ถอนการอนุมัติแล้ว ผลงานกลับไปอยู่ในรายการรอตรวจสอบ'); }); break;
+
+    case 'reqok':
+      var q = S.reqs.filter(function(x){return x.id===a;})[0]; q.status='ok';
+      logit('อรสิริ (เจ้าหน้าที่ สอศ.)','อนุมัติคำขอเอกสารฉบับเต็ม',q.rec); save(); render();
+      toast('อนุมัติคำขอแล้ว ผู้ขอเข้าถึงเอกสารได้ 90 วัน','g','เลิกทำ',function(){ q.status='wait'; save(); render(); }); break;
+    case 'reqno':
+      var q2 = S.reqs.filter(function(x){return x.id===a;})[0]; q2.status='no';
+      logit('อรสิริ (เจ้าหน้าที่ สอศ.)','ปฏิเสธคำขอเอกสารฉบับเต็ม',q2.rec); save(); render();
+      toast('ปฏิเสธคำขอแล้ว', null, 'เลิกทำ', function(){ q2.status='wait'; save(); render(); }); break;
+
+    case 'opennote':
+      var n0 = S.notes[parseInt(a,10)]; if(n0){ n0.read = true; save();
+        if(n0.rec && rec(n0.rec)){ S.cur = n0.rec; go('r.status'); } else render(); }
+      break;
+    case 'readall': S.notes.forEach(function(n){ n.read = true; }); save(); render();
+      toast('ทำเครื่องหมายว่าอ่านทั้งหมดแล้ว'); break;
+
+    case 'acctok':
+      var ac = S.acct.filter(function(x){ return x.id===a; })[0];
+      ac.status='ok'; logit('ผู้ดูแลระบบ','อนุมัติบัญชีสมาชิกใหม่',ac.email); save(); render();
+      toast('เปิดใช้งานบัญชี '+ac.name+' แล้ว','g','เลิกทำ',function(){ ac.status='wait'; save(); render(); });
+      break;
+    case 'acctno':
+      S.errs = {};
+      if(!S.acctReason.trim()){
+        S.errs.acctReason = 'ต้องระบุเหตุผลก่อนปฏิเสธ มิฉะนั้นผู้สมัครจะไม่ทราบว่าต้องแก้ไขอะไร';
+        render(); toast('ยังปฏิเสธไม่ได้ ต้องระบุเหตุผลก่อน','b'); break;
+      }
+      var ac2 = S.acct.filter(function(x){ return x.id===a; })[0];
+      modal('ปฏิเสธใบสมัครนี้','จะแจ้งกลับ <b>'+h(ac2.name)+'</b> พร้อมเหตุผลที่ระบุไว้ ผู้สมัครยื่นใหม่ได้ภายหลัง','ปฏิเสธและแจ้งกลับ', function(){
+        ac2.status='no'; logit('ผู้ดูแลระบบ','ปฏิเสธบัญชีสมาชิกใหม่',ac2.email);
+        S.acctReason=''; save(); render();
+        toast('ปฏิเสธแล้ว แจ้งเหตุผลกลับผู้สมัครทางอีเมล', null, 'เลิกทำ', function(){ ac2.status='wait'; save(); render(); });
+      }); break;
+
+    case 'ureqok':
+      var ur = S.ureq.filter(function(x){ return x.id===a; })[0]; ur.status='ok';
+      logit(WHO[S.role],'อนุมัติคำขอแก้ไขข้อมูลผู้ใช้ ('+ur.kind+')', ur.who); save(); render();
+      toast('อนุมัติคำขอ'+ur.kind+'แล้ว แจ้งผลกลับผู้ใช้ทางอีเมล','g','เลิกทำ',function(){ ur.status='wait'; save(); render(); });
+      break;
+    case 'ureqno':
+      var ur2 = S.ureq.filter(function(x){ return x.id===a; })[0];
+      modal('ปฏิเสธคำขอนี้','จะแจ้งกลับ <b>'+h(ur2.who)+'</b> ว่าคำขอ'+h(ur2.kind)+'ไม่ได้รับการอนุมัติ','ปฏิเสธ', function(){
+        ur2.status='no'; logit(WHO[S.role],'ปฏิเสธคำขอแก้ไขข้อมูลผู้ใช้', ur2.who); save(); render();
+        toast('ปฏิเสธคำขอแล้ว', null, 'เลิกทำ', function(){ ur2.status='wait'; save(); render(); }); });
+      break;
+    case 'pwreset':
+      logit(WHO[S.role],'ส่งลิงก์ตั้งรหัสผ่านใหม่ให้ผู้ใช้','—'); save();
+      toast('ส่งลิงก์ตั้งรหัสผ่านใหม่ไปยังอีเมลของผู้ใช้แล้ว','g'); break;
+    case 'export': toast('ส่งออกข้อมูลรูปแบบ '+a+' แล้ว (ต้นแบบจำลอง ไม่มีไฟล์จริง)','g'); break;
+    case 'backup': toast('สำรองข้อมูลเรียบร้อย สร้างจุดกู้คืนใหม่แล้ว','g'); break;
+    case 'restore':
+      modal('กู้คืนจากจุดสำรอง','ข้อมูลปัจจุบันทั้งหมดจะถูกแทนที่ด้วยข้อมูล ณ จุดสำรองล่าสุด การกระทำนี้ย้อนกลับไม่ได้','กู้คืน', function(){
+        resetAll(); }); break;
+    case 'rmkw':
+      var i2 = S.form.kw.indexOf(a); if(i2>=0) S.form.kw.splice(i2,1); render(); break;
+  }
+});
+
+$('resetBtn').addEventListener('click', function(){
+  modal('เริ่มต้นใหม่','ข้อมูลที่ทดลองกรอกและสถานะผลงานทั้งหมดจะกลับไปเป็นชุดตั้งต้น เหมาะสำหรับให้ผู้ประเมินคนถัดไปเริ่มจากจุดเดียวกัน','เริ่มต้นใหม่', resetAll);
+});
+
+load(); render();
+</script>
+
+</body>
+</html>
