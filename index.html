@@ -464,6 +464,9 @@ var INSTS = [
  'วิทยาลัยเทคนิคนครสวรรค์','วิทยาลัยการอาชีพบ้านไผ่','วิทยาลัยการอาชีพหลังสวน',
  'วิทยาลัยอาชีวศึกษาอุตรดิตถ์','วิทยาลัยการอาชีพนครศรีธรรมราช'];
 var VOCAB = ['พลังงานแสงอาทิตย์','เซลล์แสงอาทิตย์','ชีวมวล','ไฟฟ้ากำลัง','สื่อการสอน','ชุดสาธิต','ความเป็นจริงเสมือน','อินเทอร์เน็ตของสรรพสิ่ง','เกษตรอัจฉริยะ','การแปรรูปอาหาร','วิสาหกิจชุมชน','บรรจุภัณฑ์','ถ่านอัดแท่ง','เครื่องอบแห้ง','ระบบควบคุมอัตโนมัติ','การจัดการเรียนรู้','ทวิภาคี','งานเชื่อมโลหะ'];
+/* บัญชีตำแหน่งครูของ สอศ. ใช้เป็นรายการตัวเลือกควบคุม แทนการพิมพ์อิสระ */
+var POSITIONS = ['ครูอัตราจ้าง','ครู (พนักงานราชการ)','ครูผู้ช่วย',
+ 'ครู คศ. 1','ครู คศ. 2','ครู คศ. 3','ครู คศ. 4','ครู คศ. 5'];
 var LEVELS = ['ปวช.','ปวส.','ปวช. และ ปวส.','ปริญญาตรีสายเทคโนโลยี'];
 var AREAS = [
  'กรุงเทพมหานคร','จังหวัดขอนแก่น','จังหวัดชลบุรี',
@@ -702,7 +705,7 @@ var REQUESTS = [
 function accounts(){ return [
  {id:'AC-1', name:'นายอนุชา ทองแท้', pos:'ครูผู้ช่วย', email:'anucha.t@lopburicat.ac.th',
   inst:'วิทยาลัยเกษตรและเทคโนโลยีลพบุรี', check:'ok', status:'wait'},
- {id:'AC-2', name:'นางสาวจิราพร มีสุข', pos:'ครู คศ.1', email:'jiraporn.m@gmail.com',
+ {id:'AC-2', name:'นางสาวจิราพร มีสุข', pos:'ครู คศ. 1', email:'jiraporn.m@gmail.com',
   inst:'วิทยาลัยอาชีวศึกษาภูเก็ต', check:'warn', status:'wait'},
  {id:'AC-3', name:'นายธนกร แซ่ลิ้ม', pos:'บุคคลภายนอก', email:'thanakorn@innotech.co.th',
   inst:'— ไม่ได้ระบุ', check:'bad', status:'wait'}
@@ -1425,7 +1428,7 @@ SC['g.register'] = function(){
      fld({name:'rg_name',label:'ชื่อ–นามสกุล',req:true,value:(S.form&&S.form.rg_name)||'',ph:'เช่น นายสมชาย ใจดี'})+
      fld({name:'rg_email',label:'อีเมลหน่วยงาน',req:true,value:(S.form&&S.form.rg_email)||'',ph:'ชื่อ@วิทยาลัย.ac.th',hint:'ใช้เป็นชื่อผู้ใช้และรับการแจ้งเตือนสถานะผลงาน'})+
      fld({name:'rg_inst',label:'สถานศึกษาต้นสังกัด',req:true,type:'select',opts:INSTS,value:(S.form&&S.form.rg_inst)||'',hint:'เลือกจากรายการควบคุม เพื่อป้องกันการสะกดชื่อไม่ตรงกัน'})+
-     fld({name:'rg_pos',label:'ตำแหน่ง / กลุ่มงาน',req:true,value:(S.form&&S.form.rg_pos)||'',ph:'เช่น ครู วิทยฐานะครูชำนาญการ'})+
+     fld({name:'rg_pos',label:'ตำแหน่ง',req:true,type:'select',opts:POSITIONS,value:(S.form&&S.form.rg_pos)||'',hint:'เลือกจากรายการควบคุม ใช้ตรวจสอบกับทะเบียนประวัติใน ศธ.02'})+
    '</div>'+
    '<label class="ck"><input type="checkbox" data-f="rg_ok"'+((S.form&&S.form.rg_ok)?' checked':'')+'> ยอมรับเงื่อนไขการใช้งานและนโยบายคุ้มครองข้อมูลส่วนบุคคล</label>'+
    (S.errs.rg_ok?'<div class="err" style="color:var(--bad);font-size:12px">'+h(S.errs.rg_ok)+'</div>':'')+
@@ -1610,7 +1613,7 @@ SC['r.profile'] = function(){
      fld({name:'pf_en',label:'ชื่อ–นามสกุล (ภาษาอังกฤษ)',value:(S.form&&S.form.pf_en)||'Somchai Jaidee',hint:'ใช้ในเมทาดาทาและการส่งออกข้อมูลแบบเปิด'})+
      fld({name:'pf_email',label:'อีเมล (ชื่อผู้ใช้)',value:'somchai.j@sattahip.ac.th',ro:true,hint:'แก้ไขไม่ได้ · หากเปลี่ยนสังกัดต้องแจ้งเจ้าหน้าที่'})+
      fld({name:'pf_inst',label:'สถานศึกษาต้นสังกัด',value:MY_INST,ro:true,hint:'แก้ไขไม่ได้ · ยื่นคำขอย้ายสังกัดจากปุ่มด้านล่าง'})+
-     fld({name:'pf_pos',label:'ตำแหน่ง',value:(S.form&&S.form.pf_pos)||'ครู วิทยฐานะครูชำนาญการ'})+
+     fld({name:'pf_pos',label:'ตำแหน่ง',type:'select',opts:POSITIONS,value:(S.form&&S.form.pf_pos)||'ครู คศ. 2',hint:'เลือกจากรายการควบคุม'})+
      fld({name:'pf_rid',label:'รหัสนักวิจัย',value:'VEC-RS-024871',ro:true,hint:'ระบบกำหนดให้อัตโนมัติ ใช้เชื่อมโยงผลงานทุกชิ้น'})+
    '</div>'+
    '<h3 style="margin-top:6px">การแจ้งเตือน</h3>'+
@@ -2001,6 +2004,7 @@ SC['s.master'] = function(){
    ['ประเภทวิชาและสาขาวิชา',Object.keys(SUBJECTS).length+' / '+Object.keys(SUBJECTS).reduce(function(a,k){return a+SUBJECTS[k].length;},0),'ส่งผลงาน · ตัวกรองการค้นหา'],
    ['ประเภททุนของ สอศ.',FUNDS.length,'ส่งผลงาน · รายงาน'],
    ['ปีงบประมาณ','2565–2569','ทุกหน้าจอที่อ้างอิงปี'],
+   ['บัญชีตำแหน่งครูของ สอศ.',POSITIONS.length,'สมัครสมาชิก · ข้อมูลส่วนตัว'],
    ['บัญชีคำศัพท์ควบคุม',VOCAB.length,'ส่งผลงาน · จัดหมวดหมู่ · การค้นหา'],
    ['รายการเมทาดาทาและเกณฑ์การลงรายการ','27','ส่งผลงาน · หน้ารายละเอียด · การส่งออก']];
   return '<div class="pagehead"><div><h2>ข้อมูลหลักของระบบ</h2><p class="ph-sub">แหล่งอ้างอิงกลางของรายการตัวเลือกทุกช่องในระบบ</p></div></div>'+
@@ -2194,7 +2198,7 @@ document.addEventListener('click', function(e){
       if(!f.rg_email) S.errs.rg_email='ยังไม่ได้กรอกอีเมลหน่วยงาน';
       else if(f.rg_email.indexOf('@')<0) S.errs.rg_email='รูปแบบอีเมลไม่ถูกต้อง ต้องมีเครื่องหมาย @ เช่น ชื่อ@วิทยาลัย.ac.th';
       if(!f.rg_inst) S.errs.rg_inst='ยังไม่ได้เลือกสถานศึกษาต้นสังกัด';
-      if(!f.rg_pos) S.errs.rg_pos='ยังไม่ได้กรอกตำแหน่ง';
+      if(!f.rg_pos) S.errs.rg_pos='ยังไม่ได้เลือกตำแหน่ง';
       if(!f.rg_ok) S.errs.rg_ok='ต้องยอมรับเงื่อนไขการใช้งานก่อนจึงจะสมัครได้';
       if(Object.keys(S.errs).length){ S.v02=null; render(); break; }
       S.v02 = 'loading'; render();
