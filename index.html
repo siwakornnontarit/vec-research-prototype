@@ -742,7 +742,7 @@ var S = {
   role:'guest', screen:'g.home', recs:seed(), acct:accounts(), ureq:userReqs(),
   q:'', fType:'', fYear:'', fInst:'', fCat:'', fRegion:'', fSrc:'', bdim:'inst', adv:false, ft:true, vmore:{}, v02:null, v02file:null,
   cur:null, form:null, step:1, errs:{}, touched:false,
-  checks:{}, feedbackDraft:'', acctReason:'', notes:[], log:[], undo:null
+  checks:{}, feedbackDraft:'', acctReason:'', notes:[], log:seedLog(), undo:null
 };
 /* กุญแจเก็บสถานะผูกกับลายเซ็นของชุดข้อมูล เมื่อข้อมูลเปลี่ยน กุญแจจะเปลี่ยนตาม
    ผู้ที่เคยเปิดเว็บไว้จึงเห็นข้อมูลชุดใหม่ทันที ไม่ติดค้างอยู่กับสถานะเดิมในเครื่อง */
@@ -764,11 +764,11 @@ function load(){
   try{ var r = localStorage.getItem(KEY); if(!r) return;
     var d = JSON.parse(r); if(d && d.recs && d.recs.length){
       S.recs = d.recs; S.acct = d.acct || accounts(); S.ureq = d.ureq || userReqs();
-      S.notes = d.notes || []; S.log = d.log || []; }
+      S.notes = d.notes || []; S.log = (d.log && d.log.length) ? d.log : seedLog(); }
   }catch(e){}
 }
 function resetAll(){ try{ localStorage.removeItem(KEY); }catch(e){}
-  S.recs = seed(); S.acct = accounts(); S.ureq = userReqs(); S.notes = []; S.log = [];
+  S.recs = seed(); S.acct = accounts(); S.ureq = userReqs(); S.notes = []; S.log = seedLog();
   S.role='guest'; S.screen='g.home'; S.form=null; S.errs={}; S.cur=null; S.q=''; S.fType=''; S.fYear='';
   S.fInst=''; S.fCat=''; S.fRegion=''; S.fUsed=false; S.fIp=false; S.bdim='inst'; S.checks={}; S.feedbackDraft=''; S.acctReason='';
   render(); toast('คืนค่าเริ่มต้นเรียบร้อย ข้อมูลทดลองทั้งหมดกลับไปเป็นชุดตั้งต้น','g'); }
@@ -908,6 +908,15 @@ function trendChart(title, pts, note){
 function rec(id){ for(var i=0;i<S.recs.length;i++){ if(S.recs[i].id===id) return S.recs[i]; } return null; }
 function by(st){ return S.recs.filter(function(r){ return r.status===st; }); }
 function mine(){ return S.recs.filter(function(r){ return r.owner===ME; }); }
+/* บันทึกการใช้งานย้อนหลัง เพื่อให้ตารางตรวจสอบย้อนกลับไม่ว่างเปล่าตั้งแต่เปิดระบบครั้งแรก */
+function seedLog(){
+  return [
+    {t:'26 ก.ย. 2569 15.42 น.', who:'อรสิริ (เจ้าหน้าที่ สอศ.)', act:'เผยแพร่ผลงาน', ref:'VEC-2569-ORSEA-00001'},
+    {t:'26 ก.ย. 2569 15.38 น.', who:'อรสิริ (เจ้าหน้าที่ สอศ.)', act:'อนุมัติผลงาน', ref:'VEC-2569-ORSEA-00001'},
+    {t:'25 ก.ย. 2569 11.07 น.', who:'ผู้ดูแลระบบ', act:'เพิ่มคำศัพท์ควบคุมในบัญชีข้อมูลหลัก', ref:'บัญชีคำศัพท์ควบคุม'},
+    {t:'24 ก.ย. 2569 09.15 น.', who:'นางสาวกมลชนก แสงทอง', act:'ส่งผลงานเข้าระบบ', ref:'VEC-2569-ORSEA-00007'}
+  ];
+}
 function logit(who,act,ref){ S.log.unshift({t:nowStr(), who:who, act:act, ref:ref||'—'}); if(S.log.length>40) S.log.pop(); }
 function nowStr(){ var d=new Date(); var p=function(n){return n<10?'0'+n:''+n;};
   return d.getDate()+'/'+(d.getMonth()+1)+' '+p(d.getHours())+':'+p(d.getMinutes()); }
@@ -1824,6 +1833,48 @@ SC['r.profile'] = function(){
 };
 
 /* ---- ฟอร์มส่งผลงาน ---- */
+var TYPE_CODE = {'งานวิจัยเพื่อพัฒนาชุมชน':'ORSEA','งานวิจัยในห้องเรียน':'RBL','งานวิจัยสิ่งประดิษฐ์และนวัตกรรม':'INVENT'};
+/* รหัสผลงานใหม่ ใช้รูปแบบเดียวกับผลงานเดิมทั้งระบบ VEC-ปีงบประมาณ-ประเภทผลงาน-เลขรัน 5 หลัก */
+function newRecId(year, type){
+  var code = TYPE_CODE[type] || 'ORSEA';
+  var pre = 'VEC-' + (year||'2569') + '-' + code + '-';
+  var max = 0;
+  S.recs.forEach(function(r){
+    if(r.id && r.id.indexOf(pre)===0){
+      var n = parseInt(r.id.slice(pre.length), 10);
+      if(!isNaN(n) && n > max) max = n;
+    }
+  });
+  return pre + ('0000' + (max+1)).slice(-5);
+}
+/* เติมข้อมูลตัวอย่างให้ครบทุกช่องบังคับ สำหรับผู้ประเมินที่ต้องการทดลองเส้นทางการส่งผลงานโดยไม่ต้องพิมพ์เอง */
+function fillSample(f){
+  f = f || blankForm();
+  f.title = f.title || 'ชุดควบคุมโรงเรือนอัจฉริยะสำหรับกลุ่มวิสาหกิจชุมชนผู้ปลูกเมล่อน';
+  f.titleEn = f.titleEn || 'Smart Greenhouse Controller for Community Melon Growers';
+  f.type = f.type || 'งานวิจัยสิ่งประดิษฐ์และนวัตกรรม';
+  f.fund = f.fund || (FUNDS[0] && FUNDS[0].name ? FUNDS[0].name : FUNDS[0]);
+  f.year = f.year || '2569';
+  f.yearDone = f.yearDone || '2569';
+  f.cat = f.cat || 'อุตสาหกรรม';
+  var mj = SUBJECTS[f.cat] || [];
+  f.major = f.major || mj[0] || '';
+  f.inst = f.inst || MY_INST;
+  f.lead = f.lead || ME;
+  f.co = f.co || 'นางสาวพิมพ์ชนก ศรีสุวรรณ, นายอาทิตย์ แก้วประเสริฐ';
+  f.level = f.level || LEVELS[0];
+  f.target = f.target || 'กลุ่มวิสาหกิจชุมชนผู้ปลูกเมล่อน จำนวน 45 ราย และนักเรียนระดับ ปวช. จำนวน 60 คน';
+  f.area = f.area || 'จังหวัดสุพรรณบุรี';
+  f.abstract = f.abstract || ('งานวิจัยนี้มีวัตถุประสงค์เพื่อพัฒนาชุดควบคุมโรงเรือนอัจฉริยะที่ควบคุมอุณหภูมิ ความชื้น '+
+    'และการให้น้ำแบบอัตโนมัติ สำหรับกลุ่มวิสาหกิจชุมชนผู้ปลูกเมล่อน โดยออกแบบให้ติดตั้งและบำรุงรักษาได้เองในพื้นที่ '+
+    'ผลการทดลองใช้งานต่อเนื่องหนึ่งฤดูกาลพบว่าสามารถลดการสูญเสียผลผลิตจากความผันผวนของอุณหภูมิได้ '+
+    'และลดเวลาที่เกษตรกรต้องใช้ดูแลโรงเรือนลงอย่างมีนัยสำคัญ ทั้งนี้ข้อมูลในแบบฟอร์มนี้เป็นข้อมูลตัวอย่างสำหรับการทดลองใช้งานระบบเท่านั้น');
+  if(!f.kw || f.kw.length < 3){
+    f.kw = ['ระบบควบคุมอัตโนมัติ','เกษตรอัจฉริยะ','วิสาหกิจชุมชน'].filter(function(k){ return VOCAB.indexOf(k) >= 0; });
+    if(f.kw.length < 3) f.kw = VOCAB.slice(0,3);
+  }
+  return f;
+}
 function blankForm(){ return {id:'', title:'',titleEn:'',type:'',fund:'',year:'',yearDone:'',cat:'',major:'',
   inst:MY_INST, lead:ME, co:'', level:'', target:'', area:'', abstract:'', kw:[], files:{full:false,abs:false,img:false},
   consent:{pub:true,req:true,contact:false,hold:false}, editing:false}; }
@@ -1868,6 +1919,7 @@ SC['r.submit'] = function(){
         (S.errs.kw?'<div class="err" role="alert">'+h(S.errs.kw)+'</div>':'<div class="hint">เลือกอย่างน้อย 3 คำ ใช้บัญชีคำศัพท์ควบคุมเพื่อให้ค้นหาเจอตรงกันทุกปี</div>')+
       '</div>'+
       '<div class="btnrow"><button class="btn pri" type="button" data-act="next">ถัดไป: แนบไฟล์เอกสาร</button>'+
+      '<button class="btn" type="button" data-act="fillsample">เติมข้อมูลตัวอย่าง</button>'+
       '<button class="btn" type="button" data-act="draft">บันทึกร่าง</button>'+
       '<button class="btn" type="button" data-act="cancelform">ยกเลิก</button></div></div>';
   }
@@ -2208,7 +2260,9 @@ SC['s.settings'] = function(){
 };
 SC['s.log'] = function(){
   var rows = S.log.length ? S.log : [{t:'—',who:'ระบบ',act:'ยังไม่มีการดำเนินการในรอบนี้ ลองทดลองอนุมัติหรือเผยแพร่ผลงานดู',ref:'—'}];
-  return '<div class="pagehead"><div><h2>บันทึกการใช้งานระบบ</h2><p class="ph-sub">บันทึกทุกการกระทำที่เกิดขึ้นจริงในต้นแบบนี้ ใช้ทดสอบการตรวจสอบย้อนกลับ</p></div></div>'+
+  var seeded = seedLog().length;
+  return '<div class="pagehead"><div><h2>บันทึกการใช้งานระบบ</h2><p class="ph-sub">บันทึกทุกการกระทำที่เกิดขึ้นจริงในต้นแบบนี้ ใช้ทดสอบการตรวจสอบย้อนกลับ · '+
+   (S.log.length > seeded ? 'รายการบนสุดคือสิ่งที่ท่านเพิ่งทำในรอบนี้' : 'เมื่อท่านอนุมัติหรือเผยแพร่ผลงาน รายการใหม่จะขึ้นที่บรรทัดบนสุด')+'</p></div></div>'+
    '<div class="tw"><table><thead><tr><th>เวลา</th><th>ผู้ใช้</th><th>การกระทำ</th><th>รายการที่เกี่ยวข้อง</th></tr></thead><tbody>'+
    rows.map(function(l){ return '<tr><td class="num">'+h(l.t)+'</td><td>'+h(l.who)+'</td><td>'+h(l.act)+'</td><td class="num">'+h(l.ref)+'</td></tr>'; }).join('')+
    '</tbody></table></div>';
@@ -2286,7 +2340,7 @@ function validateStep(){
 function formToRec(){
   var f = S.form;
   var r = f.id ? rec(f.id) : null;
-  if(!r){ r = {id:'VEC-'+f.year+'-NEW-'+String(Math.floor(Math.random()*900)+100), owner:ME, hist:[]}; S.recs.unshift(r); }
+  if(!r){ r = {id:newRecId(f.year, f.type), owner:ME, hist:[]}; S.recs.unshift(r); }
   ['title','titleEn','type','fund','year','yearDone','cat','major','inst','lead','co','level','target','area','abstract'].forEach(function(k){ r[k]=f[k]; });
   r.kw = f.kw.slice(); r.files = {full:f.files.full,abs:f.files.abs,img:f.files.img};
   r.consent = {pub:f.consent.pub,req:f.consent.req,contact:f.consent.contact,hold:f.consent.hold};
@@ -2470,6 +2524,10 @@ document.addEventListener('click', function(e){
       else { render(); toast('ยังไปขั้นถัดไปไม่ได้ ระบบพบข้อมูลที่ต้องแก้','b'); }
       break;
     case 'prev': S.step = Math.max(1, S.step-1); S.errs={}; render(); break;
+    case 'fillsample':
+      S.form = fillSample(S.form); S.errs = {}; render();
+      toast('เติมข้อมูลตัวอย่างให้ครบทุกช่องแล้ว แก้ไขได้ตามต้องการ แล้วกดถัดไป','g');
+      break;
     case 'draft':
       if(!S.form.title.trim()){ S.errs.title='ต้องมีชื่อผลงานอย่างน้อย จึงจะบันทึกร่างได้'; render(); break; }
       r = formToRec(); if(r.status!=='fix') r.status='draft'; save();
