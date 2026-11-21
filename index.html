@@ -439,6 +439,20 @@ td b{color:var(--ink);font-weight:600}
 @media(max-width:520px){.foot .ft-c .ft-sep{display:none}.foot .ft-c span.num{display:block}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+/* ป้ายและแถบกำกับผลงานที่ผู้ประเมินส่งเข้าระบบเองในรอบนี้ */
+.trial{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.02em;
+  background:#fde8c8;color:#7a4a05;border:1px solid #edc389;border-radius:20px;
+  padding:1px 8px;white-space:nowrap;vertical-align:middle}
+.trialbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  background:#fffaf1;border:1px solid #edc389;border-left:4px solid #d98f1f;
+  border-radius:10px;padding:11px 14px;margin:0 0 16px}
+.trialbar .tb-c{flex:1 1 300px;min-width:0}
+.trialbar .tb-t{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.trialbar .tb-t b{font-size:14px;line-height:1.35}
+.trialbar .tb-m{margin-top:3px;font-size:12px;color:#7a4a05;line-height:1.55}
+.trialbar .btn{flex:0 0 auto}
+@media(max-width:620px){.trialbar .btn{width:100%}}
 </style>
 <style>
 html{color-scheme:light}
@@ -919,9 +933,35 @@ function seedLog(){
     {t:'24 ก.ย. 2569 09.15 น.', who:'นางสาวกมลชนก แสงทอง', act:'ส่งผลงานเข้าระบบ', ref:'VEC-2569-ORSEA-00007'}
   ];
 }
+/* ผลงานที่ผู้ประเมินส่งเข้าระบบเองในรอบนี้
+   ใช้เตือนไม่ให้สับสนกับผลงานตัวอย่าง 32 รายการที่มีอยู่เดิม */
+function trialRec(){
+  for(var i=0;i<S.recs.length;i++){ if(S.recs[i].trial) return S.recs[i]; }
+  return null;
+}
+function trialTag(r){
+  return (r && r.trial) ? ' <span class="trial">ผลงานทดลองของท่าน</span>' : '';
+}
+var TRIAL_NEXT = {
+  wait:'รอเจ้าหน้าที่ตรวจสอบ · ขั้นต่อไปสลับไปบทบาท 3. เจ้าหน้าที่ สอศ. แล้วเปิดเมนูรายการรอตรวจสอบ',
+  fix:'เจ้าหน้าที่ส่งกลับให้แก้ไข · ขั้นต่อไปสลับไปบทบาท 2. นักวิจัย เพื่อดูข้อเสนอแนะ',
+  approved:'อนุมัติแล้ว รอเผยแพร่ · ขั้นต่อไปเปิดเมนูรายการรอเผยแพร่ ในบทบาทเจ้าหน้าที่ สอศ.',
+  published:'เผยแพร่บนระบบแล้ว · ค้นหาชื่อเรื่องนี้ในเมนูค้นหาผลงานวิจัยได้',
+  draft:'ยังเป็นฉบับร่าง ยังไม่ได้ส่งเข้าระบบ'
+};
+function trialBar(){
+  var r = trialRec(); if(!r) return '';
+  return '<div class="trialbar"><div class="tb-c">'+
+    '<div class="tb-t"><span class="trial">ผลงานทดลองของท่าน</span>'+
+    '<b>'+h(r.title||'(ยังไม่ได้ตั้งชื่อ)')+'</b></div>'+
+    '<div class="tb-m"><span class="num">'+h(r.id)+'</span> · '+h(TRIAL_NEXT[r.status]||ST_LABEL[r.status]||'')+'</div></div>'+
+    '<button class="btn sm" type="button" data-act="trialgo" data-a="'+r.id+'">ไปที่ผลงานนี้</button></div>';
+}
 function logit(who,act,ref){ S.log.unshift({t:nowStr(), who:who, act:act, ref:ref||'—'}); if(S.log.length>40) S.log.pop(); }
+/* รูปแบบเวลาในบันทึกการใช้งาน ให้ตรงกับรายการเดิม เช่น 17 พ.ย. 2569 11.12 น. */
 function nowStr(){ var d=new Date(); var p=function(n){return n<10?'0'+n:''+n;};
-  return d.getDate()+'/'+(d.getMonth()+1)+' '+p(d.getHours())+':'+p(d.getMinutes()); }
+  return d.getDate()+' '+TH_MON[d.getMonth()]+' '+(d.getFullYear()+543)+' '+
+         p(d.getHours())+'.'+p(d.getMinutes())+' น.'; }
 
 /* ============ toast / modal ============ */
 var toastN = 0;
@@ -1749,7 +1789,7 @@ SC['r.portfolio'] = function(){
      else if(r.status==='published') acts += '<button class="btn sm" type="button" data-act="util" data-a="'+r.id+'">อัปเดตผล</button> '+
        '<button class="btn sm" type="button" data-act="open" data-a="'+r.id+'">ดูหน้าเผยแพร่</button>';
      else acts += '<button class="btn sm" type="button" data-act="track" data-a="'+r.id+'">ติดตามสถานะ</button>';
-     return '<tr><td><b>'+h(r.title||'(ยังไม่ได้ตั้งชื่อ)')+'</b></td><td class="num">'+h(r.year)+'</td><td>'+h(r.type)+'</td>'+
+     return '<tr><td><b>'+h(r.title||'(ยังไม่ได้ตั้งชื่อ)')+'</b>'+trialTag(r)+'</td><td class="num">'+h(r.year)+'</td><td>'+h(r.type)+'</td>'+
        '<td>'+pill(r.status)+'</td><td>'+acts+'</td></tr>';
    }).join('')+'</tbody></table></div>';
 };
@@ -2063,10 +2103,11 @@ SC['a.home'] = function(){
 
 SC['a.queue'] = function(){
   var list = S.recs.filter(function(r){ return r.status==='wait' || r.status==='fix'; });
+  list.sort(function(a,b){ return (b.trial?1:0)-(a.trial?1:0); });
   return '<div class="pagehead"><div><h2>รายการรอตรวจสอบ</h2><p class="ph-sub">'+list.length+' รายการรอดำเนินการ</p></div></div>'+
    (list.length? '<div class="tw"><table><thead><tr><th>รหัสผลงาน</th><th>ชื่อผลงาน / สถานศึกษา</th><th>ประเภท</th><th>สถานะ</th><th></th></tr></thead><tbody>'+
     list.map(function(r){ return '<tr><td class="num">'+h(r.id)+'</td>'+
-      '<td><b>'+h(r.title)+'</b><br>'+h(r.inst)+'</td><td>'+h(r.type)+'</td><td>'+pill(r.status)+'</td>'+
+      '<td><b>'+h(r.title)+'</b>'+trialTag(r)+'<br>'+h(r.inst)+'</td><td>'+h(r.type)+'</td><td>'+pill(r.status)+'</td>'+
       '<td>'+(r.status==='wait' ? '<button class="btn sm pri" type="button" data-act="review" data-a="'+r.id+'">เปิดตรวจ</button>'
                                 : '<span style="font-size:12px;color:var(--ink-3)">รอนักวิจัยแก้ไข</span>')+'</td></tr>'; }).join('')+
     '</tbody></table></div>'
@@ -2106,10 +2147,10 @@ SC['a.review'] = function(){
 };
 
 SC['a.publishq'] = function(){
-  var list = by('approved');
+  var list = by('approved').slice().sort(function(a,b){ return (b.trial?1:0)-(a.trial?1:0); });
   return '<div class="pagehead"><div><h2>รอจัดหมวดหมู่และเผยแพร่</h2><p class="ph-sub">'+list.length+' รายการ · ผ่านการอนุมัติแล้วแต่ยังค้นไม่พบในระบบ</p></div></div>'+
    (list.length? list.map(function(r){
-     return '<div class="rec"><h4>'+h(r.title)+'</h4><div class="met"><span>'+h(r.inst)+'</span><span class="num">'+h(r.id)+'</span></div>'+
+     return '<div class="rec"><h4>'+h(r.title)+trialTag(r)+'</h4><div class="met"><span>'+h(r.inst)+'</span><span class="num">'+h(r.id)+'</span></div>'+
        '<div class="ft">'+pill(r.status)+'<button class="btn sm pri" type="button" data-act="pubopen" data-a="'+r.id+'">จัดหมวดหมู่และเผยแพร่</button></div></div>';
    }).join('') : '<div class="alert g">ไม่มีผลงานรอเผยแพร่</div>');
 };
@@ -2288,7 +2329,7 @@ function shell(inner){
       'อธิบายสิทธิ์ผู้ใช้ทั้ง 4 กลุ่มของระบบ</button></div></div>'+
     '<div class="body"><nav class="side" aria-label="เมนู'+h(ROLE_NAME[S.role])+'">'+
       '<div class="sec">'+h(ROLE_NAME[S.role])+'</div>'+nav+'</nav>'+
-      '<main class="main">'+inner+'</main></div>'+
+      '<main class="main">'+trialBar()+inner+'</main></div>'+
     '<div class="foot">'+
       '<div class="ft-h">ติดต่อเรา</div>'+
       '<div class="ft-org">สำนักวิจัยและพัฒนาการอาชีวศึกษา</div>'+
@@ -2342,7 +2383,7 @@ function validateStep(){
 function formToRec(){
   var f = S.form;
   var r = f.id ? rec(f.id) : null;
-  if(!r){ r = {id:newRecId(f.year, f.type), owner:ME, hist:[]}; S.recs.unshift(r); }
+  if(!r){ r = {id:newRecId(f.year, f.type), owner:ME, hist:[], trial:true}; S.recs.unshift(r); }
   ['title','titleEn','type','fund','year','yearDone','cat','major','inst','lead','co','level','target','area','abstract'].forEach(function(k){ r[k]=f[k]; });
   r.kw = f.kw.slice(); r.files = {full:f.files.full,abs:f.files.abs,img:f.files.img};
   r.consent = {pub:f.consent.pub,req:f.consent.req,contact:f.consent.contact,hold:f.consent.hold};
@@ -2457,6 +2498,17 @@ document.addEventListener('click', function(e){
       S.adv = true; go('g.search'); break;
     case 'open': S.cur=a; if(!S.vmore) S.vmore={}; S.vmore[a]=(S.vmore[a]||0)+1; save(); go('g.detail'); break;
     case 'track': S.cur=a; go('r.status'); break;
+    case 'trialgo':
+      r = rec(a); if(!r) break;
+      S.cur = a;
+      if(S.role==='adm' || S.role==='sup'){
+        if(r.status==='wait'){ S.checks={}; S.feedbackDraft=''; S.errs={}; go('a.review'); }
+        else if(r.status==='approved'){ S.form={}; S.errs={}; go('a.publish'); }
+        else if(r.status==='published'){ go('g.detail'); }
+        else { go('a.queue'); }
+      } else if(r.status==='published'){ go('g.detail'); }
+      else { S.role='res'; go('r.status'); }
+      break;
     case 'dl': toast('ดาวน์โหลดเอกสารของ '+a+' (ต้นแบบจำลอง ไม่มีไฟล์จริง)','g'); break;
     case 'dlterms':
       (function(id){
